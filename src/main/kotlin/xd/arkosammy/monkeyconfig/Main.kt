@@ -1,11 +1,10 @@
-package xd.arkosammy.`monkey-config`
+package xd.arkosammy.monkeyconfig
 
 object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
 
-        println("Hello world")
 
     }
 
