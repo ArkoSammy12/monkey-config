@@ -1,14 +1,15 @@
 package xd.arkosammy.monkeyconfig.settings
 
-import xd.arkosammy.monkeyconfig.types.BooleanType
+import xd.arkosammy.monkeyconfig.builders.NumberSettingBuilder
 import xd.arkosammy.monkeyconfig.types.NumberType
-import xd.arkosammy.monkeyconfig.util.SettingPath
+import xd.arkosammy.monkeyconfig.values.NumberSettingValue
 import xd.arkosammy.monkeyconfig.values.SettingValue
 
 open class NumberSetting<T : Number>(
-    override val name: String,
-    override val path: SettingPath,
-    override val comment: String?,
-    override val value: SettingValue<T, NumberType<T>>
-) : AbstractSetting<T, NumberType<T>>(name, path, comment, value) {
+    settingBuilder: NumberSettingBuilder<T>
+) : AbstractSetting<T, NumberType<T>>(settingBuilder) {
+
+    override val value: SettingValue<T, NumberType<T>> =
+        NumberSettingValue(settingBuilder.defaultValue, lowerBound = settingBuilder.minValue, upperBound = settingBuilder.maxValue, serializer = settingBuilder.serializer, deserializer = settingBuilder.deserializer)
+
 }

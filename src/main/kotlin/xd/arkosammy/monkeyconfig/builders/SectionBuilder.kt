@@ -1,52 +1,90 @@
 package xd.arkosammy.monkeyconfig.builders
 
+import xd.arkosammy.monkeyconfig.sections.DefaultSection
+import xd.arkosammy.monkeyconfig.sections.Section
 import xd.arkosammy.monkeyconfig.types.SerializableType
-import xd.arkosammy.monkeyconfig.util.SettingPath
-import java.util.Deque
-import java.util.LinkedList
+import xd.arkosammy.monkeyconfig.util.ElementPath
 
-class SectionBuilder internal constructor(val name: String, val manager: ConfigManagerBuilder<*>, var parent: SectionBuilder? = null) {
+open class SectionBuilder internal constructor(
+    val name: String,
+    val manager: ConfigManagerBuilder,
+    var parent: SectionBuilder? = null
+) {
 
     var comment: String? = null
 
     var loadBeforeSave: Boolean = false
 
-    var registerSettingsAsCommands: Boolean = false
+    internal val subSections: MutableList<SectionBuilder> = mutableListOf()
 
-    private val subSections: MutableList<SectionBuilder> = mutableListOf()
+    internal val mapSections: MutableList<MapSectionBuilder<*, *>> = mutableListOf()
 
-    private val settings: MutableList<SettingBuilder<*, *>> = mutableListOf()
+    internal val settings: MutableList<SettingBuilder<*, *>> = mutableListOf()
 
-    fun <T : Any, S : SerializableType<*>> setting(settingName: String, builder: SettingBuilder<T, S>.() -> Unit): SettingPath {
-        val settingBuilder: SettingBuilder<T, S> = SettingBuilder(settingName)
+    internal val path: ElementPath = this.getPath()
+
+    fun booleanSetting(settingName: String, builder: BooleanSettingBuilder.() -> Unit): ElementPath {
+        return this.setting(settingName, builder, ::BooleanSettingBuilder)
+    }
+
+    fun <E : Enum<E>> enumSetting(settingName: String, builder: EnumSettingBuilder<E>.() -> Unit): ElementPath {
+        return this.setting(settingName, builder, ::EnumSettingBuilder)
+    }
+
+    fun <E : Any, S : SerializableType<*>> listSetting(settingName: String, builder: ListSettingBuilder<E, S>.() -> Unit): ElementPath {
+        return this.setting(settingName, builder, ::ListSettingBuilder)
+    }
+
+    fun <T : Number> numberSetting(settingName: String, builder: NumberSettingBuilder<T>.() -> Unit): ElementPath {
+        return this.setting(settingName, builder, ::NumberSettingBuilder)
+    }
+
+    fun stringSetting(settingName: String, builder: StringSettingBuilder.() -> Unit): ElementPath {
+        return this.setting(settingName, builder, ::StringSettingBuilder)
+    }
+
+    fun <T : Any, S : SerializableType<*>, B : SettingBuilder<T, S>> setting(settingName: String, builder: B.() -> Unit, builderInstanceProvider: (String, ElementPath) -> B): ElementPath {
+        val path: ElementPath = this.path.withAppendedNode(settingName)
+        val settingBuilder = builderInstanceProvider(settingName, path)
         builder(settingBuilder)
         this.settings.add(settingBuilder)
-        val strings: Deque<String> = LinkedList()
-        strings.addFirst(settingBuilder.name)
-        val path: List<String> = this.getSettingPath(strings)
-        val settingPath: SettingPath = SettingPath.of(*path.toTypedArray())
-        settingBuilder.settingPath = settingPath
-        return settingPath
+        return path
     }
 
     fun section(sectionName: String, builder: SectionBuilder.() -> Unit) {
-        val sectionBuilder: SectionBuilder = SectionBuilder(sectionName, this.manager, this)
+        val sectionBuilder = SectionBuilder(sectionName, this.manager, this)
         builder(sectionBuilder)
         this.subSections.add(sectionBuilder)
     }
 
-    private fun getSettingPath(strings: Deque<String>): List<String> {
-        strings.addFirst(this.name)
-        if (this.parent != null) {
-            this.getSettingPath(strings)
+    fun stringMapSection(sectionName: String, builder: StringMapSectionBuilder.() -> Unit): ElementPath {
+        val mapSectionBuilder = StringMapSectionBuilder(sectionName, this.manager, this)
+        builder(mapSectionBuilder)
+        this.mapSections.add(mapSectionBuilder)
+        return mapSectionBuilder.path
+    }
+
+    private fun getPath(): ElementPath {
+        var path = ElementPath()
+        this.traverseToParent { sectionBuilder -> path = path.withPrependedNode(sectionBuilder.name) }
+        return path
+    }
+
+    private fun traverseToParent(section: SectionBuilder? = null, consumer: (SectionBuilder) -> Unit) {
+        val startingSection: SectionBuilder = section ?: this.also { currentSectionBuilder ->
+            consumer(currentSectionBuilder)
         }
-        return strings.toList()
+        val parent: SectionBuilder? = startingSection.parent
+        if (parent == null) {
+            return
+        }
+        consumer(parent)
+        traverseToParent(parent, consumer)
     }
 
     //TODO: Implement section building
-    internal fun build() {
-
-
+    internal fun build(): Section {
+        return DefaultSection(this, this.path)
     }
 
 }

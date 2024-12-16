@@ -1,4 +1,5 @@
 package xd.arkosammy.monkeyconfig.types
 
-class BooleanType(override val value: Boolean) : SerializableType<Boolean> {
+@JvmInline
+value class BooleanType(override val value: Boolean) : SerializableType<Boolean> {
 }
