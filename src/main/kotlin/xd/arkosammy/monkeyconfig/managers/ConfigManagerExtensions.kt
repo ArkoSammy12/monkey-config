@@ -3,11 +3,13 @@
 package xd.arkosammy.monkeyconfig.managers
 
 import xd.arkosammy.monkeyconfig.sections.maps.MapSection
+import xd.arkosammy.monkeyconfig.sections.maps.StringMapSection
 import xd.arkosammy.monkeyconfig.settings.BooleanSetting
 import xd.arkosammy.monkeyconfig.settings.EnumSetting
 import xd.arkosammy.monkeyconfig.settings.ListSetting
 import xd.arkosammy.monkeyconfig.settings.NumberSetting
 import xd.arkosammy.monkeyconfig.settings.Setting
+import xd.arkosammy.monkeyconfig.settings.StringListSetting
 import xd.arkosammy.monkeyconfig.settings.StringSetting
 import xd.arkosammy.monkeyconfig.util.ElementPath
 
@@ -19,6 +21,9 @@ fun <E : Enum<E>> ConfigManager.getEnumSetting(settingPath: ElementPath): Settin
 
 fun <T : Any> ConfigManager.getListSetting(settingPath: ElementPath): Setting<List<T>, *>? =
     this.getSetting<List<T>, ListSetting<T, *>>(settingPath)
+
+fun ConfigManager.getStringListSetting(settingPath: ElementPath): StringListSetting? =
+    this.getSetting<List<String>, StringListSetting>(settingPath) as StringListSetting?
 
 fun <T : Number> ConfigManager.getNumberSetting(settingPath: ElementPath): Setting<T, *>? =
     this.getSetting<T, NumberSetting<T>>(settingPath)
@@ -37,6 +42,9 @@ fun <V : Any, M : MapSection<V, *>> ConfigManager.getMapSection(mapSectionPath: 
     }
     return returnedSection
 }
+
+fun ConfigManager.getStringMapSection(mapSection: ElementPath): StringMapSection? =
+    this.getMapSection<String, StringMapSection>(mapSection)
 
 inline fun <V : Any, reified M : MapSection<V, *>> ConfigManager.getMapSection(mapSectionPath: ElementPath) =
     this.getMapSection(mapSectionPath, M::class.java)
@@ -63,6 +71,10 @@ fun <E : Enum<E>> ConfigManager.getRawEnumSettingValue(settingPath: ElementPath,
 @JvmOverloads
 fun <T : Any> ConfigManager.getRawListSettingValue(settingPath: ElementPath, orElse: List<T>? = null): List<T>? =
     this.getRawSettingValue<List<T>, Setting<List<T>, *>>(settingPath, orElse)
+
+@JvmOverloads
+fun ConfigManager.getRawStringListSettingValue(settingPath: ElementPath, orElse: List<String>? = null): List<String>? =
+    this.getRawListSettingValue(settingPath, orElse)
 
 @JvmOverloads
 fun <T : Number> ConfigManager.getRawNumberSettingValue(settingPath: ElementPath, orElse: T? = null): T? =
