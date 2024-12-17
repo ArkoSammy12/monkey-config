@@ -3,6 +3,7 @@ package xd.arkosammy.monkeyconfig.builders
 import xd.arkosammy.monkeyconfig.sections.DefaultSection
 import xd.arkosammy.monkeyconfig.sections.Section
 import xd.arkosammy.monkeyconfig.types.SerializableType
+import xd.arkosammy.monkeyconfig.types.StringType
 import xd.arkosammy.monkeyconfig.util.ElementPath
 
 open class SectionBuilder(
@@ -15,7 +16,7 @@ open class SectionBuilder(
 
     open var loadBeforeSave: Boolean = false
 
-    open var implementation: (SectionBuilder) -> Section = { builder -> DefaultSection(builder) }
+    open var implementation: (SectionBuilder) -> Section = ::DefaultSection
 
     internal val subSections: MutableList<SectionBuilder> = mutableListOf()
 
@@ -33,28 +34,29 @@ open class SectionBuilder(
         return path
     }
 
-    fun booleanSetting(settingName: String, defaultValue: Boolean, builder: BooleanSettingBuilder.() -> Unit): ElementPath {
-        return this.setting(settingName, defaultValue, ::BooleanSettingBuilder, builder)
-    }
+    fun booleanSetting(settingName: String, defaultValue: Boolean, builder: BooleanSettingBuilder.() -> Unit): ElementPath =
+        this.setting(settingName, defaultValue, ::BooleanSettingBuilder, builder)
 
-    fun stringSetting(settingName: String, defaultValue: String, builder: StringSettingBuilder.() -> Unit): ElementPath {
-        return this.setting(settingName, defaultValue, ::StringSettingBuilder, builder)
-    }
+    fun stringSetting(settingName: String, defaultValue: String, builder: StringSettingBuilder.() -> Unit): ElementPath =
+        this.setting(settingName, defaultValue, ::StringSettingBuilder, builder)
 
-    fun <T : Number> numberSetting(settingName: String, defaultValue: T, builder: NumberSettingBuilder<T>.() -> Unit): ElementPath {
-        return this.setting(settingName, defaultValue, ::NumberSettingBuilder, builder)
-    }
+    fun <T : Number> numberSetting(settingName: String, defaultValue: T, builder: NumberSettingBuilder<T>.() -> Unit): ElementPath =
+        this.setting(settingName, defaultValue, ::NumberSettingBuilder, builder)
 
-    fun <E : Any, S : SerializableType<*>> listSetting(settingName: String, defaultValue: List<E>, builder: ListSettingBuilder<E, S>.() -> Unit): ElementPath {
-        return this.setting(settingName, defaultValue, ::ListSettingBuilder, builder)
-    }
+    fun <E : Any, S : SerializableType<*>> listSetting(settingName: String, defaultValue: List<E>, builder: ListSettingBuilder<E, S>.() -> Unit): ElementPath =
+        this.setting(settingName, defaultValue, ::ListSettingBuilder, builder)
 
-    fun <E : Enum<E>> enumSetting(settingName: String, defaultValue: E, builder: EnumSettingBuilder<E>.() -> Unit): ElementPath {
-        return this.setting(settingName, defaultValue, ::EnumSettingBuilder, builder)
-    }
+    fun stringListSetting(settingName: String, defaultValue: List<String>, builder: StringListSettingBuilder.() -> Unit): ElementPath  =
+        this.listSetting<String, StringType>(settingName, defaultValue) {
+            builder(this as StringListSettingBuilder)
+        }
 
-    fun section(sectionName: String, builder: SectionBuilder.() -> Unit) {
-        val sectionBuilder = SectionBuilder(sectionName, this.manager, this)
+    fun <E : Enum<E>> enumSetting(settingName: String, defaultValue: E, builder: EnumSettingBuilder<E>.() -> Unit): ElementPath =
+        this.setting(settingName, defaultValue, ::EnumSettingBuilder, builder)
+
+    @JvmOverloads
+    fun section(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder, SectionBuilder?) -> SectionBuilder = ::SectionBuilder, builder: SectionBuilder.() -> Unit) {
+        val sectionBuilder: SectionBuilder = builderInstanceProvider(sectionName, this.manager, this)
         builder(sectionBuilder)
         this.subSections.add(sectionBuilder)
     }
@@ -66,9 +68,8 @@ open class SectionBuilder(
         return mapSectionBuilder.path
     }
 
-    fun stringMapSection(sectionName: String, builder: StringMapSectionBuilder.() -> Unit): ElementPath {
-        return this.mapSection(sectionName, ::StringMapSectionBuilder, builder)
-    }
+    fun stringMapSection(sectionName: String, builder: StringMapSectionBuilder.() -> Unit): ElementPath =
+        this.mapSection(sectionName, ::StringMapSectionBuilder, builder)
 
     private fun getPath(): ElementPath {
         var path = ElementPath()
@@ -88,7 +89,7 @@ open class SectionBuilder(
         traverseToParent(parent, consumer)
     }
 
-    internal fun build(): Section =
+    internal open fun build(): Section =
         this.implementation(this)
 
 }

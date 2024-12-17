@@ -25,12 +25,18 @@ data class ElementPath(val string: String) {
         get() = this.asList.toTypedArray()
 
     fun withAppendedNode(node: String) : ElementPath {
+        if (node.contains(".")) {
+            throw IllegalArgumentException("Element path node cannot contain \".\"!")
+        }
         val nodes: MutableList<String> = this.string.split(".").toMutableList()
         nodes.add(node)
         return ElementPath(nodes)
     }
 
     fun withPrependedNode(node: String) : ElementPath {
+        if (node.contains(".")) {
+            throw IllegalArgumentException("Element path node cannot contain \".\"!")
+        }
         val nodes: MutableList<String> = mutableListOf()
         nodes.add(node)
         nodes.addAll(this.string.split("."))

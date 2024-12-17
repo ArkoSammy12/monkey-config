@@ -11,9 +11,9 @@ open class StringSettingBuilder(
     path: ElementPath
 ) : SettingBuilder<String, StringType>(name, defaultValue, path) {
 
-    override var serializer: (String) -> StringType = { stringValue -> StringType(stringValue) }
+    override var serializer: (String) -> StringType = ::StringType
 
-    override var deserializer: (StringType) -> String = { serializedStringValue -> serializedStringValue.value }
+    override var deserializer: (StringType) -> String = StringType::value
 
     override var implementation: (SettingBuilder<String, StringType>) -> Setting<String, StringType> = ::StringSetting
 

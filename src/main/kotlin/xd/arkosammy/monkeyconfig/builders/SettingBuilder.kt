@@ -18,7 +18,7 @@ open class SettingBuilder<T : Any, S : SerializableType<*>>(
 
     open lateinit var implementation: (SettingBuilder<T, S>) -> Setting<T, S>
 
-    open fun build(): Setting<T, S> =
+    internal open fun build(): Setting<T, S> =
         this.implementation(this)
 
 }

@@ -19,8 +19,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 open class DefaultConfigManager(
-    configManagerBuilder: ConfigManagerBuilder,
-    protected val logger: Logger?
+    configManagerBuilder: ConfigManagerBuilder
 ) : ConfigManager {
 
     final override val fileName: String = configManagerBuilder.fileName
@@ -28,6 +27,8 @@ open class DefaultConfigManager(
     final override val configFormat: ConfigFormat<*> = configManagerBuilder.fileFormat
 
     final override val filePath: Path = configManagerBuilder.filePath
+
+    val logger: Logger? = configManagerBuilder.logger
 
     protected val configBuilder: GenericBuilder<out Config, out FileConfig> = FileConfig.builder(this.filePath, this.configFormat)
         .preserveInsertionOrder().also { builder ->

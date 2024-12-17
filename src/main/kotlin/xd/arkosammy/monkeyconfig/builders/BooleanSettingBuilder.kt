@@ -11,9 +11,9 @@ open class BooleanSettingBuilder(
     path: ElementPath
 ) : SettingBuilder<Boolean, BooleanType>(name, defaultValue, path) {
 
-    override var serializer: (Boolean) -> BooleanType = { booleanValue -> BooleanType(booleanValue) }
+    override var serializer: (Boolean) -> BooleanType = ::BooleanType
 
-    override var deserializer: (BooleanType) -> Boolean = { serializedBooleanValue -> serializedBooleanValue.value }
+    override var deserializer: (BooleanType) -> Boolean = BooleanType::value
 
     override var implementation: (SettingBuilder<Boolean, BooleanType>) -> Setting<Boolean, BooleanType> = ::BooleanSetting
 

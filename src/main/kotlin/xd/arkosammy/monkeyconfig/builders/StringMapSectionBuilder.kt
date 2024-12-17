@@ -9,9 +9,9 @@ open class StringMapSectionBuilder(
     parent: SectionBuilder? = null
 ) : MapSectionBuilder<String, StringType>(name, parent) {
 
-    override var serializer: (String) -> StringType = { stringValue -> StringType(stringValue) }
+    override var serializer: (String) -> StringType = ::StringType
 
-    override var deserializer: (StringType) -> String = { serializedStringValue -> serializedStringValue.value }
+    override var deserializer: (StringType) -> String = StringType::value
 
     override var implementation: (MapSectionBuilder<String, StringType>) -> MapSection<String, StringType> = ::StringMapSection
 

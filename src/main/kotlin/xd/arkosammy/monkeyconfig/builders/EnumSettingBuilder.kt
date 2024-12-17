@@ -11,9 +11,9 @@ open class EnumSettingBuilder<E : Enum<E>>(
     path: ElementPath
 ) : SettingBuilder<E, EnumType<E>>(name, defaultValue, path) {
 
-    override var serializer: (E) -> EnumType<E> = { enumValue -> EnumType(enumValue) }
+    override var serializer: (E) -> EnumType<E> = ::EnumType
 
-    override var deserializer: (EnumType<E>) -> E = { serializedEnumValue -> serializedEnumValue.value }
+    override var deserializer: (EnumType<E>) -> E = EnumType<E>::value
 
     override var implementation: (SettingBuilder<E, EnumType<E>>) -> Setting<E, EnumType<E>> = ::EnumSetting
 
