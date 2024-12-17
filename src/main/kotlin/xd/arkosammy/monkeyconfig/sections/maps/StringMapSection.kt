@@ -12,20 +12,18 @@ class StringMapSection(
     sectionBuilder: MapSectionBuilder<String, StringType>
 ) : AbstractMapSection<String, StringType>(sectionBuilder) {
 
-    override fun getEntryFromSerialized(path: ElementPath, serializedEntry: SerializableType<*>): Setting<String, StringType>? {
+    override fun getEntryFromSerialized(entryPath: ElementPath, serializedEntry: SerializableType<*>): Setting<String, StringType>? {
         if (serializedEntry !is StringType) {
             return null
         }
-        val stringSettingBuilder = StringSettingBuilder(path.asList.last(), path)
-        stringSettingBuilder.defaultValue = serializedEntry.value
+        val stringSettingBuilder = StringSettingBuilder(entryPath.asList.last(), serializedEntry.value, entryPath)
         stringSettingBuilder.serializer = this.serializer
         stringSettingBuilder.deserializer = this.deserializer
         return StringSetting(stringSettingBuilder)
     }
 
-    override fun getEntryFromValue(path: ElementPath, defaultValue: String, value: String): Setting<String, StringType> {
-        val stringSettingBuilder = StringSettingBuilder(path.asList.last(), path)
-        stringSettingBuilder.defaultValue = value
+    override fun getEntryFromValue(entryPath: ElementPath, defaultValue: String, value: String): Setting<String, StringType> {
+        val stringSettingBuilder = StringSettingBuilder(entryPath.asList.last(), defaultValue, entryPath)
         stringSettingBuilder.serializer = this.serializer
         stringSettingBuilder.deserializer = this.deserializer
         return StringSetting(stringSettingBuilder)

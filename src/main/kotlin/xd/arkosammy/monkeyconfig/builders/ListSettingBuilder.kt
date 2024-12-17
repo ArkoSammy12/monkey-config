@@ -8,11 +8,10 @@ import xd.arkosammy.monkeyconfig.util.ElementPath
 
 open class ListSettingBuilder<E : Any, S : SerializableType<*>>(
     name: String,
+    defaultValue: List<E>,
     path: ElementPath
-) : SettingBuilder<List<E>, ListType<S>>(name, path) {
+) : SettingBuilder<List<E>, ListType<S>>(name, defaultValue, path) {
 
-    override fun build(): Setting<List<E>, ListType<S>> {
-        return ListSetting(this)
-    }
+    override var implementation: (SettingBuilder<List<E>, ListType<S>>) -> Setting<List<E>, ListType<S>> = ::ListSetting
 
 }

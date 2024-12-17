@@ -24,6 +24,6 @@ open class SettingValue<T : Any, S : SerializableType<*>>(
     }
 
     override fun toString(): String =
-        "${this::class.simpleName}{defaultValue=$default, value=$raw}"
+        "${this::class.simpleName}{defaultValue=$default, value=$raw, defaultSerializedValue=$defaultSerialized, serializedValue=$serialized}"
 
 }

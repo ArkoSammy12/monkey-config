@@ -4,7 +4,7 @@ import xd.arkosammy.monkeyconfig.builders.SettingBuilder
 import xd.arkosammy.monkeyconfig.types.SerializableType
 import xd.arkosammy.monkeyconfig.util.ElementPath
 
-abstract class AbstractSetting<T : Any, S : SerializableType<*>> internal constructor(
+abstract class AbstractSetting<T : Any, S : SerializableType<*>>(
     settingBuilder: SettingBuilder<T, S>
 ) : Setting<T, S> {
 

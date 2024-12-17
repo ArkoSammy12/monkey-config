@@ -4,17 +4,24 @@ import com.electronwill.nightconfig.core.Config
 import com.electronwill.nightconfig.core.ConfigFormat
 import com.electronwill.nightconfig.core.file.FileConfig
 import com.electronwill.nightconfig.core.file.GenericBuilder
+import org.slf4j.Logger
 import xd.arkosammy.monkeyconfig.ConfigElement
 import xd.arkosammy.monkeyconfig.builders.ConfigManagerBuilder
+import xd.arkosammy.monkeyconfig.builders.MapSectionBuilder
 import xd.arkosammy.monkeyconfig.builders.SectionBuilder
 import xd.arkosammy.monkeyconfig.builders.SettingBuilder
 import xd.arkosammy.monkeyconfig.sections.Section
+import xd.arkosammy.monkeyconfig.sections.forEachSection
+import xd.arkosammy.monkeyconfig.sections.maps.MapSection
 import xd.arkosammy.monkeyconfig.settings.Setting
 import xd.arkosammy.monkeyconfig.util.ElementPath
 import java.nio.file.Files
 import java.nio.file.Path
 
-open class DefaultConfigManager(configManagerBuilder: ConfigManagerBuilder) : ConfigManager {
+open class DefaultConfigManager(
+    configManagerBuilder: ConfigManagerBuilder,
+    protected val logger: Logger?
+) : ConfigManager {
 
     final override val fileName: String = configManagerBuilder.fileName
 
@@ -23,20 +30,49 @@ open class DefaultConfigManager(configManagerBuilder: ConfigManagerBuilder) : Co
     final override val filePath: Path = configManagerBuilder.filePath
 
     protected val configBuilder: GenericBuilder<out Config, out FileConfig> = FileConfig.builder(this.filePath, this.configFormat)
-        .sync()
-        .preserveInsertionOrder()
+        .preserveInsertionOrder().also { builder ->
+            if (configManagerBuilder.async) {
+                builder.async()
+            } else {
+                builder.sync()
+            }
+            if (configManagerBuilder.autoReload) {
+                builder.autoreload()
+                builder.onAutoReload {
+                    this.reloadFromFile()
+                }
+            }
+        }
+
+    protected val fileConfig: FileConfig? by lazy {
+        try {
+            configBuilder.build().apply {
+                if (!Files.exists(filePath)) {
+                    createNewConfigFile(this)
+                }
+            }
+        } catch (e: Exception) {
+            this.logger?.error("Failed to create FileConfig instance for $this: $e")
+            null
+        }
+    }
 
     final override val configElements: List<ConfigElement>
 
     init {
         System.setProperty("nightconfig.preserveInsertionOrder", "true")
         val newConfigElements: MutableList<ConfigElement> = mutableListOf()
-        for (section: SectionBuilder in configManagerBuilder.sections) {
-            val section: Section = section.build()
+        for (sectionBuilder: SectionBuilder in configManagerBuilder.sections) {
+            val section: Section = sectionBuilder.build()
             newConfigElements.add(section)
         }
-        for (setting: SettingBuilder<*, *> in configManagerBuilder.settings) {
-            val setting: Setting<*, *> = setting.build()
+        for (mapSectionBuilder: MapSectionBuilder<*, *> in configManagerBuilder.mapSections) {
+            val mapSection: MapSection<*, *> = mapSectionBuilder.build()
+            newConfigElements.add(mapSection)
+
+        }
+        for (settingBuilder: SettingBuilder<*, *> in configManagerBuilder.settings) {
+            val setting: Setting<*, *> = settingBuilder.build()
             newConfigElements.add(setting)
         }
         this.configElements = newConfigElements.toList()
@@ -44,6 +80,7 @@ open class DefaultConfigManager(configManagerBuilder: ConfigManagerBuilder) : Co
             section.setRegistered()
             section.onRegistered()
         }
+        this.checkForElementNameUniqueness()
         this.ifConfigPresent { fileConfig ->
             fileConfig.load()
             this.traverseSections { section ->
@@ -51,7 +88,7 @@ open class DefaultConfigManager(configManagerBuilder: ConfigManagerBuilder) : Co
                 section.onLoaded()
             }
             this.saveToFile()
-            // TODO: LOG
+            this.logger?.info("Loaded setting values for $this from config file at: ${this.filePath}")
             return@ifConfigPresent true
         }
 
@@ -103,10 +140,10 @@ open class DefaultConfigManager(configManagerBuilder: ConfigManagerBuilder) : Co
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <V : Any, T : Setting<V, *>> getSetting(elementPath: ElementPath, settingClass: Class<T>): Setting<V, *>? {
+    override fun <V : Any, T : Setting<V, *>> getSetting(settingPath: ElementPath, settingClass: Class<T>): Setting<V, *>? {
         var returnedSetting: Setting<V, *>? = null
         this.traverseSettings { setting ->
-            if (settingClass.isInstance(setting) && setting.path == elementPath) {
+            if (settingClass.isInstance(setting) && setting.path == settingPath) {
                 returnedSetting = setting as T
                 return@traverseSettings
             }
@@ -114,22 +151,24 @@ open class DefaultConfigManager(configManagerBuilder: ConfigManagerBuilder) : Co
         return returnedSetting
     }
 
-    protected fun ifConfigPresent(fileConfigFunction: (FileConfig) -> Boolean): Boolean {
-        val fileExists: Boolean = Files.exists(this.filePath)
-        return this.configBuilder.build().use { fileConfig ->
-            if (fileExists) {
-                return@use fileConfigFunction(fileConfig ?: return@use false)
-            } else {
-                // TODO: LOG
-                this.createNewConfigFile(fileConfig)
-                false
-            }
-        }
+    protected fun ifConfigPresent(action: (FileConfig) -> Boolean): Boolean {
+        return action(this.fileConfig ?: return false)
     }
 
-    // TODO: private fun checkForSettingPathUniqueness()
+    private fun checkForElementNameUniqueness() {
+        val foundNames: MutableSet<String> = mutableSetOf()
+        for (configElement: ConfigElement in this.configElements) {
+            val configElementName = configElement.name
+            if (foundNames.contains(configElementName)) {
+                throw IllegalArgumentException("Config element with name $configElementName is not unique in config element $configElement!")
+            }
+            foundNames.add(configElementName)
+        }
+         this.forEachSection { section -> section.checkForElementNameUniqueness() }
+    }
 
     protected fun createNewConfigFile(fileConfig: FileConfig) {
+        this.logger?.warn("Found no preexisting configuration file for ConfigManager: $this. Creating new one at: ${this.filePath}")
         this.traverseSections { section ->
             section.setDefaultValues(fileConfig)
         }
@@ -137,6 +176,18 @@ open class DefaultConfigManager(configManagerBuilder: ConfigManagerBuilder) : Co
     }
 
     override fun toString(): String =
-        "${this::class.simpleName}{fileName=$fileName, format=$configFormat, path=$filePath, settingAmount=${this.configElements.filter { configElement -> configElement is Setting<*, *> }.size} , sectionAmount=${this.configElements.filter { configElement -> configElement is Section }.size}}"
+        "${this::class.simpleName}{fileName=$fileName, format=$configFormat, path=$filePath, settingAmount=${this.settings.size} , sectionAmount=${this.sections.size}}"
 
+}
+
+private fun Section.checkForElementNameUniqueness() {
+    val foundNames: MutableSet<String> = mutableSetOf()
+    for (configElement: ConfigElement in this.configElements) {
+        val configElementName = configElement.name
+        if (foundNames.contains(configElementName)) {
+            throw IllegalArgumentException("Config element with name $configElementName is not unique in config element $configElement!")
+        }
+        foundNames.add(configElementName)
+    }
+    this.forEachSection { section -> section.checkForElementNameUniqueness() }
 }

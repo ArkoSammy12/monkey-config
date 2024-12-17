@@ -1,3 +1,5 @@
+@file:JvmName("NumberSettingValue")
+
 package xd.arkosammy.monkeyconfig.values
 
 import xd.arkosammy.monkeyconfig.types.NumberType
@@ -24,6 +26,9 @@ class NumberSettingValue<T : Number>(
             super.raw = value
         }
         get() = super.raw
+
+    override fun toString(): String =
+        "${this::class.simpleName}{defaultValue=$default, value=$raw, defaultSerializedValue=$defaultSerialized, serializedValue=$serialized, minValue=$lowerBound, maxValue=$upperBound}"
 
 }
 

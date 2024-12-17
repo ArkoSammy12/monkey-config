@@ -1,3 +1,5 @@
+@file:JvmName("SerializableType")
+
 package xd.arkosammy.monkeyconfig.types
 
 import xd.arkosammy.monkeyconfig.settings.Setting

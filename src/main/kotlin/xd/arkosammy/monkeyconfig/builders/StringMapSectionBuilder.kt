@@ -4,18 +4,15 @@ import xd.arkosammy.monkeyconfig.sections.maps.MapSection
 import xd.arkosammy.monkeyconfig.sections.maps.StringMapSection
 import xd.arkosammy.monkeyconfig.types.StringType
 
-open class StringMapSectionBuilder internal constructor(
+open class StringMapSectionBuilder(
     name: String,
-    manager: ConfigManagerBuilder,
     parent: SectionBuilder? = null
-) : MapSectionBuilder<String, StringType>(name, manager, parent) {
+) : MapSectionBuilder<String, StringType>(name, parent) {
 
     override var serializer: (String) -> StringType = { stringValue -> StringType(stringValue) }
 
     override var deserializer: (StringType) -> String = { serializedStringValue -> serializedStringValue.value }
 
-    override fun build(): MapSection<String, StringType> {
-        return StringMapSection(this)
-    }
+    override var implementation: (MapSectionBuilder<String, StringType>) -> MapSection<String, StringType> = ::StringMapSection
 
 }

@@ -110,8 +110,11 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
         this.entries.addAll(tempEntries)
     }
 
-    protected abstract fun getEntryFromSerialized(path: ElementPath, serializedEntry: SerializableType<*>): Setting<V, S>?
+    protected abstract fun getEntryFromSerialized(entryPath: ElementPath, serializedEntry: SerializableType<*>): Setting<V, S>?
 
-    protected abstract fun getEntryFromValue(path: ElementPath, defaultValue: V, value: V = defaultValue): Setting<V, S>
+    protected abstract fun getEntryFromValue(entryPath: ElementPath, defaultValue: V, value: V = defaultValue): Setting<V, S>
+
+    override fun toString(): String =
+        "${this::class.simpleName}{name=$name, comment=$comment, entryAmount=${this.entries.size}, registered=$isRegistered, loadBeforeSave=$loadBeforeSave}"
 
 }

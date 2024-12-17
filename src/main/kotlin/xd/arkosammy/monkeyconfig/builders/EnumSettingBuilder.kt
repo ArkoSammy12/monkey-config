@@ -7,15 +7,14 @@ import xd.arkosammy.monkeyconfig.util.ElementPath
 
 open class EnumSettingBuilder<E : Enum<E>>(
     name: String,
+    defaultValue: E,
     path: ElementPath
-) : SettingBuilder<E, EnumType<E>>(name, path) {
+) : SettingBuilder<E, EnumType<E>>(name, defaultValue, path) {
 
     override var serializer: (E) -> EnumType<E> = { enumValue -> EnumType(enumValue) }
 
     override var deserializer: (EnumType<E>) -> E = { serializedEnumValue -> serializedEnumValue.value }
 
-    override fun build(): Setting<E, EnumType<E>> {
-        return EnumSetting(this)
-    }
+    override var implementation: (SettingBuilder<E, EnumType<E>>) -> Setting<E, EnumType<E>> = ::EnumSetting
 
 }

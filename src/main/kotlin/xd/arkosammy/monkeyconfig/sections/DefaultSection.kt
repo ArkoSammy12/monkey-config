@@ -3,12 +3,10 @@ package xd.arkosammy.monkeyconfig.sections
 import xd.arkosammy.monkeyconfig.ConfigElement
 import xd.arkosammy.monkeyconfig.builders.SectionBuilder
 import xd.arkosammy.monkeyconfig.builders.SettingBuilder
-import xd.arkosammy.monkeyconfig.util.ElementPath
 
-class DefaultSection @JvmOverloads constructor(
+class DefaultSection(
     sectionBuilder: SectionBuilder,
-    sectionPath: ElementPath
-) : AbstractSection(sectionBuilder, sectionPath) {
+) : AbstractSection(sectionBuilder) {
 
     override val configElements: List<ConfigElement>
 

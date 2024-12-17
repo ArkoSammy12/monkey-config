@@ -1,3 +1,5 @@
+@file:JvmName("ConfigManager")
+
 package xd.arkosammy.monkeyconfig.managers
 
 import com.electronwill.nightconfig.core.ConfigFormat
@@ -23,12 +25,12 @@ interface ConfigManager {
 
     fun saveToFile(): Boolean
 
-    fun <V : Any, T : Setting<V, *>> getSetting(elementPath: ElementPath, settingClass: Class<T>): Setting<V, *>?
+    fun <V : Any, T : Setting<V, *>> getSetting(settingPath: ElementPath, settingClass: Class<T>): Setting<V, *>?
 
-    fun getSection(elementPath: ElementPath) : Section? {
+    fun getSection(sectionPath: ElementPath) : Section? {
         var returnedSection: Section? = null
         this.traverseSections { section ->
-            if (section.path == elementPath) {
+            if (section.path == sectionPath) {
                 returnedSection = section
                 return@traverseSections
             }
@@ -44,39 +46,39 @@ interface ConfigManager {
 
 }
 
-val  ConfigManager.sections: List<Section>
+val ConfigManager.sections: List<Section>
     get() {
         val sections: MutableList<Section> = mutableListOf()
         this.traverseSections { section -> sections.add(section) }
         return sections.toList()
     }
 
-val  ConfigManager.settings: List<Setting<*, *>>
+val ConfigManager.settings: List<Setting<*, *>>
     get() {
         val settings: MutableList<Setting<*, *>> = mutableListOf()
         this.traverseSettings { setting -> settings.add(setting) }
         return settings.toList()
     }
 
-inline fun <V : Any, reified T : Setting<V, *>> ConfigManager.getSetting(elementPath: ElementPath): Setting<V, *>? {
-    return this.getSetting(elementPath, T::class.java)
+inline fun <V : Any, reified T : Setting<V, *>> ConfigManager.getSetting(settingPath: ElementPath): Setting<V, *>? {
+    return this.getSetting(settingPath, T::class.java)
 }
 
-fun ConfigManager.forEachSection(consumer: (Section) -> Unit) {
+fun ConfigManager.forEachSection(action: (Section) -> Unit) {
     for (element: ConfigElement in this.configElements) {
         if (element !is Section) {
             continue
         }
-        consumer(element)
+        action(element)
     }
 }
 
-fun ConfigManager.forEachSetting(consumer: (Setting<*, *>) -> Unit) {
+fun ConfigManager.forEachSetting(action: (Setting<*, *>) -> Unit) {
     for (element: ConfigElement in this.configElements) {
         if (element !is Setting<*, *>) {
             continue
         }
-        consumer(element)
+        action(element)
     }
 }
 

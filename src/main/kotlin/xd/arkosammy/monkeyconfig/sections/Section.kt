@@ -1,3 +1,5 @@
+@file:JvmName("Section")
+
 package xd.arkosammy.monkeyconfig.sections
 
 import com.electronwill.nightconfig.core.Config

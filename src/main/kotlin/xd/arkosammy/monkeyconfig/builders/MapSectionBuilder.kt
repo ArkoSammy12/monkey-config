@@ -4,21 +4,22 @@ import xd.arkosammy.monkeyconfig.sections.maps.MapSection
 import xd.arkosammy.monkeyconfig.types.SerializableType
 import xd.arkosammy.monkeyconfig.util.ElementPath
 
-abstract class MapSectionBuilder<V : Any, S : SerializableType<*>> internal constructor(
+open class MapSectionBuilder<V : Any, S : SerializableType<*>>(
     val name: String,
-    val manager: ConfigManagerBuilder,
     val parent: SectionBuilder? = null
 ) {
 
-    var comment: String? = null
-
-    internal val path: ElementPath = this.getPath()
-
-    internal val defaultEntries: MutableMap<String, V> = mutableMapOf()
+    open var comment: String? = null
 
     open lateinit var serializer: (V) -> S
 
     open lateinit var deserializer: (S) -> V
+
+    open lateinit var implementation: (MapSectionBuilder<V, S>) -> MapSection<V, S>
+
+    internal val path: ElementPath = this.getPath()
+
+    internal val defaultEntries: MutableMap<String, V> = mutableMapOf()
 
     fun addDefaultEntry(entry: Pair<String, V>) {
         val key: String = entry.first
@@ -44,6 +45,7 @@ abstract class MapSectionBuilder<V : Any, S : SerializableType<*>> internal cons
         traverseToParent(parent, consumer)
     }
 
-    abstract fun build(): MapSection<V, S>
+    fun build(): MapSection<V, S> =
+        this.implementation(this)
 
 }

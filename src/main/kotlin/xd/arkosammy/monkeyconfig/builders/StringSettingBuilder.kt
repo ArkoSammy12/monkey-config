@@ -7,15 +7,14 @@ import xd.arkosammy.monkeyconfig.util.ElementPath
 
 open class StringSettingBuilder(
     name: String,
+    defaultValue: String,
     path: ElementPath
-) : SettingBuilder<String, StringType>(name, path) {
+) : SettingBuilder<String, StringType>(name, defaultValue, path) {
 
     override var serializer: (String) -> StringType = { stringValue -> StringType(stringValue) }
 
     override var deserializer: (StringType) -> String = { serializedStringValue -> serializedStringValue.value }
 
-    override fun build(): Setting<String, StringType> {
-        return StringSetting(this)
-    }
+    override var implementation: (SettingBuilder<String, StringType>) -> Setting<String, StringType> = ::StringSetting
 
 }
