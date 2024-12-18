@@ -11,7 +11,7 @@ open class NumberSettingBuilder<T : Number>(
     path: ElementPath
 ) : SettingBuilder<T, NumberType<T>>(name, defaultValue, path) {
 
-    override var serializer: (T) -> NumberType<T> = ::NumberType
+    override var serializer: (T) -> NumberType<T> = { value -> NumberType(value) }
 
     override var deserializer: (NumberType<T>) -> T = NumberType<T>::value
 

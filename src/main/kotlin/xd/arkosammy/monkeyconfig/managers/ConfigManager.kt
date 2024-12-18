@@ -1,5 +1,3 @@
-@file:JvmName("ConfigManager")
-
 package xd.arkosammy.monkeyconfig.managers
 
 import com.electronwill.nightconfig.core.ConfigFormat

@@ -1,4 +1,4 @@
-@file:JvmName("NumberSettingValue")
+@file:JvmName("NumberSettingValueUtils")
 
 package xd.arkosammy.monkeyconfig.values
 

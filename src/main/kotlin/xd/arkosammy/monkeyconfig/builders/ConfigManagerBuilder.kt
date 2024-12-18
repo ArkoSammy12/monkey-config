@@ -1,5 +1,3 @@
-@file:JvmName("ConfigManagerBuilder")
-
 package xd.arkosammy.monkeyconfig.builders
 
 import com.electronwill.nightconfig.core.Config
@@ -31,17 +29,26 @@ open class ConfigManagerBuilder(
 
     open var implementation: (ConfigManagerBuilder) -> DefaultConfigManager = ::DefaultConfigManager
 
-    internal val sections: MutableList<SectionBuilder> = mutableListOf()
+    val settingBuilders: List<SettingBuilder<*, *>>
+        get() = this.internalSettingBuilders.toList()
 
-    internal val settings: MutableList<SettingBuilder<*, *>> = mutableListOf()
+    val sectionBuilders: List<SectionBuilder>
+        get() = this.internalSectionBuilders.toList()
 
-    internal val mapSections: MutableList<MapSectionBuilder<*, *>> = mutableListOf()
+    val mapSectionBuilders: List<MapSectionBuilder<*, *>>
+        get() = this.internalMapSectionBuilders.toList()
+
+    protected val internalSettingBuilders: MutableList<SettingBuilder<*, *>> = mutableListOf()
+
+    protected val internalSectionBuilders: MutableList<SectionBuilder> = mutableListOf()
+
+    protected val internalMapSectionBuilders: MutableList<MapSectionBuilder<*, *>> = mutableListOf()
 
     fun <T : Any, S : SerializableType<*>, B : SettingBuilder<T, S>> setting(settingName: String, defaultValue: T, builderInstanceProvider: (String, T, ElementPath) -> B, builder: B.() -> Unit): ElementPath {
         val path = ElementPath(settingName)
         val settingBuilder: B = builderInstanceProvider(settingName, defaultValue, path)
         builder(settingBuilder)
-        this.settings.add(settingBuilder)
+        this.internalSettingBuilders.add(settingBuilder)
         return path
     }
 
@@ -69,13 +76,13 @@ open class ConfigManagerBuilder(
     fun section(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder) -> SectionBuilder = ::SectionBuilder, builder: SectionBuilder.() -> Unit) {
         val sectionBuilder: SectionBuilder = builderInstanceProvider(sectionName, this)
         builder(sectionBuilder)
-        this.sections.add(sectionBuilder)
+        this.internalSectionBuilders.add(sectionBuilder)
     }
 
     fun <V : Any, S : SerializableType<*>, B : MapSectionBuilder<V, S>> mapSection(sectionName: String, builderInstanceProvider: (String) -> B, builder: B.() -> Unit): ElementPath {
         val mapSectionBuilder = builderInstanceProvider(sectionName)
         builder(mapSectionBuilder)
-        this.mapSections.add(mapSectionBuilder)
+        this.internalMapSectionBuilders.add(mapSectionBuilder)
         return mapSectionBuilder.path
     }
 

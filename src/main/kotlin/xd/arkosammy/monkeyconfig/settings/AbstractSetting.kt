@@ -15,6 +15,6 @@ abstract class AbstractSetting<T : Any, S : SerializableType<*>>(
     override val path: ElementPath = settingBuilder.path
 
     override fun toString(): String =
-        "${this::class.simpleName}{name=$name, path=$path, value=$value, comment$comment}"
+        "${this::class.simpleName}{name=$name, path=$path, value=$value, comment=$comment}"
 
 }

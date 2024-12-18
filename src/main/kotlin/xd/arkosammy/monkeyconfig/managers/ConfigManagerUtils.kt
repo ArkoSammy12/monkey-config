@@ -1,4 +1,4 @@
-@file:JvmName("ConfigManagerExtensions")
+@file:JvmName("ConfigManagerUtils")
 
 package xd.arkosammy.monkeyconfig.managers
 

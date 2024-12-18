@@ -1,4 +1,4 @@
-@file:JvmName("SerializableType")
+@file:JvmName("SerializableTypeUtils")
 
 package xd.arkosammy.monkeyconfig.types
 

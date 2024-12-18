@@ -18,11 +18,20 @@ open class SectionBuilder(
 
     open var implementation: (SectionBuilder) -> Section = ::DefaultSection
 
-    internal val subSections: MutableList<SectionBuilder> = mutableListOf()
+    val sectionBuilders: List<SectionBuilder>
+        get() = internalSectionBuilders.toList()
 
-    internal val mapSections: MutableList<MapSectionBuilder<*, *>> = mutableListOf()
+    val mapSectionBuilders: List<MapSectionBuilder<*, *>>
+        get() = internalMapSectionBuilders.toList()
 
-    internal val settings: MutableList<SettingBuilder<*, *>> = mutableListOf()
+    val settingBuilders: List<SettingBuilder<*, *>>
+        get() = internalSettingBuilders.toList()
+
+    protected val internalSectionBuilders: MutableList<SectionBuilder> = mutableListOf()
+
+    protected val internalMapSectionBuilders: MutableList<MapSectionBuilder<*, *>> = mutableListOf()
+
+    protected val internalSettingBuilders: MutableList<SettingBuilder<*, *>> = mutableListOf()
 
     internal val path: ElementPath = this.getPath()
 
@@ -30,7 +39,7 @@ open class SectionBuilder(
         val path: ElementPath = this.path.withAppendedNode(settingName)
         val settingBuilder = builderInstanceProvider(settingName, defaultValue, path)
         builder(settingBuilder)
-        this.settings.add(settingBuilder)
+        this.internalSettingBuilders.add(settingBuilder)
         return path
     }
 
@@ -58,23 +67,24 @@ open class SectionBuilder(
     fun section(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder, SectionBuilder?) -> SectionBuilder = ::SectionBuilder, builder: SectionBuilder.() -> Unit) {
         val sectionBuilder: SectionBuilder = builderInstanceProvider(sectionName, this.manager, this)
         builder(sectionBuilder)
-        this.subSections.add(sectionBuilder)
+        this.internalSectionBuilders.add(sectionBuilder)
     }
 
     fun <V : Any, S : SerializableType<*>, B : MapSectionBuilder<V, S>> mapSection(sectionName: String, builderInstanceProvider: (String, SectionBuilder) -> B, builder: B.() -> Unit): ElementPath {
         val mapSectionBuilder = builderInstanceProvider(sectionName, this)
         builder(mapSectionBuilder)
-        this.mapSections.add(mapSectionBuilder)
+        this.internalMapSectionBuilders.add(mapSectionBuilder)
         return mapSectionBuilder.path
     }
 
     fun stringMapSection(sectionName: String, builder: StringMapSectionBuilder.() -> Unit): ElementPath =
         this.mapSection(sectionName, ::StringMapSectionBuilder, builder)
 
+    // TODO: Find a way to avoid the use of the null assertion here
     private fun getPath(): ElementPath {
-        var path = ElementPath()
-        this.traverseToParent { sectionBuilder -> path = path.withPrependedNode(sectionBuilder.name) }
-        return path
+        var path: ElementPath? = null
+        this.traverseToParent { sectionBuilder -> path = path?.withPrependedNode(sectionBuilder.name) ?: ElementPath(sectionBuilder.name) }
+        return path!!
     }
 
     private fun traverseToParent(section: SectionBuilder? = null, consumer: (SectionBuilder) -> Unit) {

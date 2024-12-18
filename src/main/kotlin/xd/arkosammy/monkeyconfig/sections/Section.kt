@@ -1,4 +1,4 @@
-@file:JvmName("Section")
+@file:JvmName("SectionUtils")
 
 package xd.arkosammy.monkeyconfig.sections
 

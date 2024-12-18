@@ -1,5 +1,3 @@
-import java.net.URI
-
 plugins {
     kotlin("jvm") version "2.1.0"
     id("maven-publish")
@@ -21,11 +19,11 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-    implementation("com.electronwill.night-config:core:${property("night_config_version")}")!!
-	implementation("com.electronwill.night-config:toml:${property("night_config_version")}")!!
-	implementation("com.electronwill.night-config:json:${property("night_config_version")}")!!
-	implementation("com.electronwill.night-config:yaml:${property("night_config_version")}")!!
-	implementation("com.electronwill.night-config:hocon:${property("night_config_version")}")!!
+    implementation("com.electronwill.night-config:core:${property("night_config_version")}")
+	implementation("com.electronwill.night-config:toml:${property("night_config_version")}")
+	implementation("com.electronwill.night-config:json:${property("night_config_version")}")
+	implementation("com.electronwill.night-config:yaml:${property("night_config_version")}")
+	implementation("com.electronwill.night-config:hocon:${property("night_config_version")}")
 	implementation("org.slf4j:slf4j-api:${property("slf4j_version")}")
 }
 

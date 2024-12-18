@@ -2,6 +2,7 @@ package xd.arkosammy.monkeyconfig.managers
 
 import com.electronwill.nightconfig.core.Config
 import com.electronwill.nightconfig.core.ConfigFormat
+import com.electronwill.nightconfig.core.file.CommentedFileConfig
 import com.electronwill.nightconfig.core.file.FileConfig
 import com.electronwill.nightconfig.core.file.GenericBuilder
 import org.slf4j.Logger
@@ -13,7 +14,12 @@ import xd.arkosammy.monkeyconfig.builders.SettingBuilder
 import xd.arkosammy.monkeyconfig.sections.Section
 import xd.arkosammy.monkeyconfig.sections.forEachSection
 import xd.arkosammy.monkeyconfig.sections.maps.MapSection
+import xd.arkosammy.monkeyconfig.settings.EnumSetting
 import xd.arkosammy.monkeyconfig.settings.Setting
+import xd.arkosammy.monkeyconfig.types.ListType
+import xd.arkosammy.monkeyconfig.types.SerializableType
+import xd.arkosammy.monkeyconfig.types.setValueSafely
+import xd.arkosammy.monkeyconfig.types.toSerializedType
 import xd.arkosammy.monkeyconfig.util.ElementPath
 import java.nio.file.Files
 import java.nio.file.Path
@@ -63,16 +69,16 @@ open class DefaultConfigManager(
     init {
         System.setProperty("nightconfig.preserveInsertionOrder", "true")
         val newConfigElements: MutableList<ConfigElement> = mutableListOf()
-        for (sectionBuilder: SectionBuilder in configManagerBuilder.sections) {
+        for (sectionBuilder: SectionBuilder in configManagerBuilder.sectionBuilders) {
             val section: Section = sectionBuilder.build()
             newConfigElements.add(section)
         }
-        for (mapSectionBuilder: MapSectionBuilder<*, *> in configManagerBuilder.mapSections) {
+        for (mapSectionBuilder: MapSectionBuilder<*, *> in configManagerBuilder.mapSectionBuilders) {
             val mapSection: MapSection<*, *> = mapSectionBuilder.build()
             newConfigElements.add(mapSection)
 
         }
-        for (settingBuilder: SettingBuilder<*, *> in configManagerBuilder.settings) {
+        for (settingBuilder: SettingBuilder<*, *> in configManagerBuilder.settingBuilders) {
             val setting: Setting<*, *> = settingBuilder.build()
             newConfigElements.add(setting)
         }
@@ -84,6 +90,7 @@ open class DefaultConfigManager(
         this.checkForElementNameUniqueness()
         this.ifConfigPresent { fileConfig ->
             fileConfig.load()
+            this.loadSettingValues(fileConfig)
             this.traverseSections { section ->
                 section.loadValues(fileConfig)
                 section.onLoaded()
@@ -98,6 +105,7 @@ open class DefaultConfigManager(
     override fun reloadFromFile(): Boolean {
         return this.ifConfigPresent { fileConfig ->
             fileConfig.load()
+            this.loadSettingValues(fileConfig)
             this.traverseSections { section ->
                 section.loadValues(fileConfig)
                 section.onLoaded()
@@ -109,13 +117,15 @@ open class DefaultConfigManager(
     override fun saveToFile(): Boolean {
         return this.ifConfigPresent { fileConfig ->
             fileConfig.load()
+            this.setSettingValues(fileConfig)
             this.traverseSections { section ->
                 if (section.loadBeforeSave) {
                     section.loadValues(fileConfig)
                 }
                 section.setValues(fileConfig)
             }
-            this.removedUnusedSections(fileConfig)
+            // TODO: Fix this method
+            //this.removedUnusedSections(fileConfig)
             fileConfig.save()
             this.traverseSections { section ->
                 section.onSavedToFile()
@@ -124,19 +134,47 @@ open class DefaultConfigManager(
         }
     }
 
+    // TODO: Clean up the implementation of top level settings
+    protected fun setSettingValues(fileConfig: FileConfig) {
+        this.forEachSetting { setting ->
+            val settingPath: ElementPath = setting.path
+            val serializedSettingValue: SerializableType<*> = setting.value.serialized
+            fileConfig.set<Any>(settingPath.string, if (serializedSettingValue is ListType<*>) serializedSettingValue.rawList else serializedSettingValue.value)
+            setting.comment?.let { comment ->
+                if (fileConfig is CommentedFileConfig) fileConfig.setComment(settingPath.string, comment)
+            }
+        }
+    }
+
+    protected fun loadSettingValues(fileConfig: FileConfig) {
+        this.forEachSetting { setting ->
+            val settingPath: ElementPath = setting.path
+            val defaultRawValue: Any = setting.value.defaultSerialized.value
+            val rawValue: Any = if (setting is EnumSetting<*>) {
+                fileConfig.getEnum(settingPath.string, setting.enumClass)
+            } else {
+                fileConfig.getOrElse(settingPath.string, defaultRawValue)
+            } ?: defaultRawValue
+            val serializedRawValue: SerializableType<*> = toSerializedType(rawValue)
+            setValueSafely(setting, serializedRawValue)
+        }
+    }
+
     // TODO: TEST
-    private fun removedUnusedSections(fileConfig: FileConfig, config: Config? = null) {
+    private fun removedUnusedSections(fileConfig: FileConfig, config: Config? = null, currentPath: ElementPath? = null) {
         val currentConfig: Config = config ?: fileConfig
         currentConfig.entrySet().removeIf { entry ->
-            if (!this.containsSection(ElementPath(entry.key))) {
+            val entryPath: ElementPath = currentPath?.withAppendedNode(entry.key) ?: ElementPath(entry.key)
+            if (!this.containsSection(entryPath) && !this.containsSetting(entryPath)) {
                 fileConfig.get<Config>(entry.key).entrySet().clear()
                 true
             } else {
                 false
             }
         }
-        fileConfig.entrySet().forEach { entry ->
-            this.removedUnusedSections(fileConfig, fileConfig.get<Config>(entry.key))
+        currentConfig.entrySet().forEach { entry ->
+            val entryPath: ElementPath = currentPath?.withAppendedNode(entry.key) ?: ElementPath(entry.key)
+            this.removedUnusedSections(fileConfig, fileConfig.get<Config>(entry.key), entryPath)
         }
     }
 
