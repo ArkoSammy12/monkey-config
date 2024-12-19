@@ -7,7 +7,7 @@ plugins {
 
 group = property("maven_group")!!
 version = property("project_version")!!
-val archiveBaseName: String = property("archive_base_name") as String
+val archiveBaseName: String = property("archives_base_name") as String
 
 base {
     archivesName = archiveBaseName
@@ -34,7 +34,6 @@ kotlin {
     jvmToolchain(21)
 }
 
-// configure the maven publication
 publishing {
 	repositories {
 		maven("https://maven.enjarai.dev/releases") {
@@ -52,6 +51,40 @@ publishing {
 			artifactId = base.archivesName.get()
 			version = project.version.toString()
 			from(components["java"])
+
+            pom {
+                name.set(archiveBaseName)
+                description.set("A declarative Kotlin library to create and manage configuration files easily and idiomatically.") // Change here
+                url.set("https://github.com/ArkoSammy12/monkey-config")
+
+                licenses {
+                    license {
+                        name.set("The MIT License (MIT)")
+                        url.set("https://mit-license.org/")
+                    }
+                }
+
+                issueManagement {
+                    system.set("GitHub Issues")
+                    url.set("https://github.com/ArkoSammy12/monkey-config/issues")
+                }
+
+                developers {
+                    developer {
+                        id.set("ArkoSammy12")
+                        //name.set("")
+                        //email.set("")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com:ArkoSammy12/monkey-config.git")
+                    developerConnection.set("scm:git:ssh://github.com:ArkoSammy12/monkey-config.git")
+                    url.set("https://github.com/ArkoSammy12/monkey-config")
+                }
+            }
+
 		}
 	}
 }
+
