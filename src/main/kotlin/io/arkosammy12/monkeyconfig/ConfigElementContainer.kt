@@ -53,6 +53,7 @@ inline fun <reified T : ConfigElement> ConfigElementContainer.traverseElements(c
     this.traverseElements(T::class.java, currentElement, action)
 }
 
+/*
 fun ConfigElementContainer.containsElement(elementPath: ElementPath): Boolean =
     this.containsElement<ConfigElement>(elementPath)
 
@@ -67,4 +68,6 @@ fun ConfigElementContainer.forEachElement(action: (ConfigElement) -> Unit) {
 fun ConfigElementContainer.traverseElements(currentElement: ConfigElementContainer? = null, action: (ConfigElement) -> Unit) {
     this.traverseElements<ConfigElement>(currentElement, action)
 }
+
+ */
 

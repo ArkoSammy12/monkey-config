@@ -95,7 +95,7 @@ open class DefaultConfigManager(
             }
 
              */
-            this.forEachElement { element -> element.updateValue(fileConfig) }
+            this.forEachElement<ConfigElement> { element -> element.updateValue(fileConfig) }
             this.saveToFile()
             this.logger?.info("Loaded setting values for $this from config file at: ${this.filePath}")
             return@ifConfigPresent true
@@ -106,7 +106,7 @@ open class DefaultConfigManager(
     override fun loadFromFile(): Boolean {
         return this.ifConfigPresent { fileConfig ->
             fileConfig.load()
-            this.forEachElement { element -> element.updateValue(fileConfig) }
+            this.forEachElement<ConfigElement> { element -> element.updateValue(fileConfig) }
             return@ifConfigPresent true
         }
     }
@@ -115,7 +115,7 @@ open class DefaultConfigManager(
         return this.ifConfigPresent { fileConfig ->
             fileConfig.load()
 
-            this.forEachElement { element -> element.updateValue(fileConfig) }
+            this.forEachElement<ConfigElement> { element -> element.updateValue(fileConfig) }
             fileConfig.entrySet().removeIf { entry -> this.configElements.none { element -> element.path.asList.last() == entry.key  } }
             fileConfig.save()
             /*
@@ -154,7 +154,7 @@ private fun ConfigElementContainer.checkForElementNameUniqueness() {
         }
         foundNames.add(configElementName)
     }
-    this.forEachElement { element ->
+    this.forEachElement<ConfigElement> { element ->
         if (element is ConfigElementContainer) {
             element.checkForElementNameUniqueness()
         }

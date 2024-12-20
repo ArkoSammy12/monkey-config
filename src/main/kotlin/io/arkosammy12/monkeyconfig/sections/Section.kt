@@ -35,7 +35,7 @@ interface Section : ConfigElement, ConfigElementContainer {
         if (this.loadBeforeSave) {
             this.updateValue(fileConfig)
         }
-        this.forEachElement { element ->
+        this.forEachElement<ConfigElement> { element ->
             element.updateValue(fileConfig)
         }
         this.comment?.let { comment ->
@@ -44,7 +44,7 @@ interface Section : ConfigElement, ConfigElementContainer {
     }
 
     override fun updateValue(fileConfig: FileConfig) {
-        this.forEachElement { element ->
+        this.forEachElement<ConfigElement> { element ->
             element.saveValue(fileConfig)
         }
     }
