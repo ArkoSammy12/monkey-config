@@ -2,25 +2,19 @@ package io.arkosammy12.monkeyconfig.managers
 
 import com.electronwill.nightconfig.core.Config
 import com.electronwill.nightconfig.core.ConfigFormat
-import com.electronwill.nightconfig.core.file.CommentedFileConfig
 import com.electronwill.nightconfig.core.file.FileConfig
 import com.electronwill.nightconfig.core.file.GenericBuilder
 import org.slf4j.Logger
 import io.arkosammy12.monkeyconfig.ConfigElement
+import io.arkosammy12.monkeyconfig.ConfigElementContainer
 import io.arkosammy12.monkeyconfig.builders.ConfigManagerBuilder
 import io.arkosammy12.monkeyconfig.builders.MapSectionBuilder
 import io.arkosammy12.monkeyconfig.builders.SectionBuilder
 import io.arkosammy12.monkeyconfig.builders.SettingBuilder
+import io.arkosammy12.monkeyconfig.forEachElement
 import io.arkosammy12.monkeyconfig.sections.Section
-import io.arkosammy12.monkeyconfig.sections.forEachSection
 import io.arkosammy12.monkeyconfig.sections.maps.MapSection
-import io.arkosammy12.monkeyconfig.settings.EnumSetting
 import io.arkosammy12.monkeyconfig.settings.Setting
-import io.arkosammy12.monkeyconfig.types.ListType
-import io.arkosammy12.monkeyconfig.types.SerializableType
-import io.arkosammy12.monkeyconfig.types.setValueSafely
-import io.arkosammy12.monkeyconfig.types.toSerializedType
-import io.arkosammy12.monkeyconfig.util.ElementPath
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -46,7 +40,7 @@ open class DefaultConfigManager(
             if (configManagerBuilder.autoReload) {
                 builder.autoreload()
                 builder.onAutoReload {
-                    this.reloadFromFile()
+                    this.loadFromFile()
                 }
             }
         }
@@ -83,18 +77,25 @@ open class DefaultConfigManager(
             newConfigElements.add(setting)
         }
         this.configElements = newConfigElements.toList()
+        /*
         this.traverseSections { section ->
             section.setRegistered()
             section.onRegistered()
         }
+
+         */
+
         this.checkForElementNameUniqueness()
         this.ifConfigPresent { fileConfig ->
             fileConfig.load()
-            this.loadTopLevelSettingValues(fileConfig)
+            /*
             this.traverseSections { section ->
                 section.loadValues(fileConfig)
                 section.onLoaded()
             }
+
+             */
+            this.forEachElement { element -> element.updateValue(fileConfig) }
             this.saveToFile()
             this.logger?.info("Loaded setting values for $this from config file at: ${this.filePath}")
             return@ifConfigPresent true
@@ -102,14 +103,10 @@ open class DefaultConfigManager(
 
     }
 
-    override fun reloadFromFile(): Boolean {
+    override fun loadFromFile(): Boolean {
         return this.ifConfigPresent { fileConfig ->
             fileConfig.load()
-            this.loadTopLevelSettingValues(fileConfig)
-            this.traverseSections { section ->
-                section.loadValues(fileConfig)
-                section.onLoaded()
-            }
+            this.forEachElement { element -> element.updateValue(fileConfig) }
             return@ifConfigPresent true
         }
     }
@@ -117,102 +114,28 @@ open class DefaultConfigManager(
     override fun saveToFile(): Boolean {
         return this.ifConfigPresent { fileConfig ->
             fileConfig.load()
-            this.setTopLevelSettingValues(fileConfig)
-            this.traverseSections { section ->
-                if (section.loadBeforeSave) {
-                    section.loadValues(fileConfig)
-                }
-                section.setValues(fileConfig)
-            }
-            this.removedUnusedSections(fileConfig)
+
+            this.forEachElement { element -> element.updateValue(fileConfig) }
+            fileConfig.entrySet().removeIf { entry -> this.configElements.none { element -> element.path.asList.last() == entry.key  } }
             fileConfig.save()
+            /*
             this.traverseSections { section ->
                 section.onSavedToFile()
             }
+
+             */
             return@ifConfigPresent true
         }
-    }
-
-    protected fun setTopLevelSettingValues(fileConfig: FileConfig) {
-        this.forEachSetting { setting ->
-            val settingPath: ElementPath = setting.path
-            val serializedSettingValue: SerializableType<*> = setting.value.serialized
-            fileConfig.set<Any>(settingPath.string, if (serializedSettingValue is ListType<*>) serializedSettingValue.rawList else serializedSettingValue.value)
-            setting.comment?.let { comment ->
-                if (fileConfig is CommentedFileConfig) fileConfig.setComment(settingPath.string, comment)
-            }
-        }
-        // Clean up unused top level settings
-        fileConfig.entrySet().removeIf { entry -> !this.containsSetting(ElementPath(entry.key)) && !this.containsSection(ElementPath(entry.key)) }
-    }
-
-    protected fun loadTopLevelSettingValues(fileConfig: FileConfig) {
-        this.forEachSetting { setting ->
-            val settingPath: ElementPath = setting.path
-            val defaultRawValue: Any = setting.value.defaultSerialized.value
-            val rawValue: Any = if (setting is EnumSetting<*>) {
-                fileConfig.getEnum(settingPath.string, setting.enumClass)
-            } else {
-                fileConfig.getOrElse(settingPath.string, defaultRawValue)
-            } ?: defaultRawValue
-            val serializedRawValue: SerializableType<*> = toSerializedType(rawValue)
-            setValueSafely(setting, serializedRawValue)
-        }
-    }
-
-    // TODO: TEST
-    private fun removedUnusedSections(fileConfig: FileConfig, config: Config? = null, currentPath: ElementPath? = null) {
-
-        val currentConfig: Config = config ?: fileConfig
-        currentConfig.entrySet().removeIf { entry ->
-            val entryPath: ElementPath = currentPath?.withAppendedNode(entry.key) ?: ElementPath(entry.key)
-            if (!this.containsSection(entryPath) && !this.containsSetting(entryPath)) {
-                currentConfig.get<Config>(entry.key).entrySet().clear()
-                true
-            } else {
-                false
-            }
-        }
-        currentConfig.entrySet().forEach { entry ->
-            val entryPath: ElementPath = currentPath?.withAppendedNode(entry.key) ?: ElementPath(entry.key)
-            if (!this.containsSetting(entryPath)) {
-                this.removedUnusedSections(fileConfig, currentConfig.get<Config>(entry.key), entryPath)
-            }
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <V : Any, T : Setting<V, *>> getSetting(settingPath: ElementPath, settingClass: Class<T>): Setting<V, *>? {
-        var returnedSetting: Setting<V, *>? = null
-        this.traverseSettings { setting ->
-            if (settingClass.isInstance(setting) && setting.path == settingPath) {
-                returnedSetting = setting as T
-                return@traverseSettings
-            }
-        }
-        return returnedSetting
     }
 
     protected fun ifConfigPresent(action: (FileConfig) -> Boolean): Boolean {
         return action(this.fileConfig ?: return false)
     }
 
-    private fun checkForElementNameUniqueness() {
-        val foundNames: MutableSet<String> = mutableSetOf()
-        for (configElement: ConfigElement in this.configElements) {
-            val configElementName = configElement.name
-            if (foundNames.contains(configElementName)) {
-                throw IllegalArgumentException("Config element with name $configElementName is not unique in config element $configElement!")
-            }
-            foundNames.add(configElementName)
-        }
-         this.forEachSection { section -> section.checkForElementNameUniqueness() }
-    }
-
     protected fun createNewConfigFile(fileConfig: FileConfig) {
         this.logger?.warn("Found no preexisting configuration file for ConfigManager: $this. Creating new one at: ${this.filePath}")
         this.traverseSections { section ->
-            section.setDefaultValues(fileConfig)
+            section.saveWithDefaultValues(fileConfig)
         }
         fileConfig.save()
     }
@@ -222,7 +145,7 @@ open class DefaultConfigManager(
 
 }
 
-private fun Section.checkForElementNameUniqueness() {
+private fun ConfigElementContainer.checkForElementNameUniqueness() {
     val foundNames: MutableSet<String> = mutableSetOf()
     for (configElement: ConfigElement in this.configElements) {
         val configElementName = configElement.name
@@ -231,5 +154,9 @@ private fun Section.checkForElementNameUniqueness() {
         }
         foundNames.add(configElementName)
     }
-    this.forEachSection { section -> section.checkForElementNameUniqueness() }
+    this.forEachElement { element ->
+        if (element is ConfigElementContainer) {
+            element.checkForElementNameUniqueness()
+        }
+    }
 }

@@ -74,13 +74,14 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
         return false
     }
 
-    override fun setDefaultValues(fileConfig: FileConfig) {
+    override fun saveWithDefaultValues(fileConfig: FileConfig) {
         this.entries.clear()
         this.entries.addAll(this.defaultEntries)
-        this.setValues(fileConfig)
+        this.saveValue(fileConfig)
     }
 
-    override fun setValues(fileConfig: FileConfig) {
+    override fun saveValue(fileConfig: FileConfig) {
+        this.updateValue(fileConfig)
         for (entry: Setting<V, S> in this.entries) {
             val serialized: S = entry.value.serialized
             fileConfig.set<Any>(entry.path.string, if (serialized is ListType<*>) serialized.rawList else serialized.value)
@@ -90,7 +91,7 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
         }
     }
 
-    override fun loadValues(fileConfig: FileConfig) {
+    override fun updateValue(fileConfig: FileConfig) {
         val config: Config = fileConfig.get(this.path.string) ?: run {
             // TODO: LOG
             return

@@ -25,6 +25,6 @@ abstract class AbstractSection(
     }
 
     override fun toString(): String =
-        "${this::class.simpleName}{name=$name, comment=$comment, settingAmount=${this.settings.size}, subSectionAmount=${this.subSections.size}, registered=$isRegistered, loadBeforeSave=$loadBeforeSave}"
+        "${this::class.simpleName}{name=$name, comment=$comment, settingAmount=${this.settings.size}, subSectionAmount=${this.sections.size}, registered=$isRegistered, loadBeforeSave=$loadBeforeSave}"
 
 }

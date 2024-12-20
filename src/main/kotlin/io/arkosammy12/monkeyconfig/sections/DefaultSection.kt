@@ -1,5 +1,7 @@
 package io.arkosammy12.monkeyconfig.sections
 
+import com.electronwill.nightconfig.core.Config
+import com.electronwill.nightconfig.core.file.FileConfig
 import io.arkosammy12.monkeyconfig.ConfigElement
 import io.arkosammy12.monkeyconfig.builders.MapSectionBuilder
 import io.arkosammy12.monkeyconfig.builders.SectionBuilder
@@ -28,6 +30,13 @@ class DefaultSection(
         // TODO: TEST THIS
         //sectionBuilder.internalSettingBuilders.clear()
         //sectionBuilder.subSections.clear()
+    }
+
+
+    override fun saveValue(fileConfig: FileConfig) {
+        super.saveValue(fileConfig)
+        val config: Config = fileConfig.get(this.path.string) ?: return
+        config.entrySet().removeIf { entry -> this.configElements.none { element -> element.path.asList.last() == entry.key  } }
     }
 
 }
