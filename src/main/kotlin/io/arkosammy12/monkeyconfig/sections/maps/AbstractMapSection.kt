@@ -3,9 +3,9 @@ package io.arkosammy12.monkeyconfig.sections.maps
 import com.electronwill.nightconfig.core.Config
 import com.electronwill.nightconfig.core.file.CommentedFileConfig
 import com.electronwill.nightconfig.core.file.FileConfig
-import io.arkosammy12.monkeyconfig.ConfigElement
+import io.arkosammy12.monkeyconfig.base.ConfigElement
 import io.arkosammy12.monkeyconfig.builders.MapSectionBuilder
-import io.arkosammy12.monkeyconfig.settings.Setting
+import io.arkosammy12.monkeyconfig.base.Setting
 import io.arkosammy12.monkeyconfig.types.ListType
 import io.arkosammy12.monkeyconfig.types.SerializableType
 import io.arkosammy12.monkeyconfig.types.toSerializedType
@@ -32,7 +32,19 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
 
     protected var defaultEntries: List<Setting<V, S>>
 
-    protected var internalIsRegistered: Boolean = false
+    final override val loadBeforeSave: Boolean
+        get() = true
+
+    protected var internalIsInitialized: Boolean = false
+
+    override val isInitialized: Boolean
+        get() = this.internalIsInitialized
+
+    protected val onInitializedFunction: ((MapSection<V, S>) -> Unit)? = mapSectionBuilder.onInitialized
+
+    protected val onUpdatedFunction: ((MapSection<V, S>) ->  Unit)? = mapSectionBuilder.onUpdated
+
+    protected val onSavedFunction: ((MapSection<V, S>) -> Unit)? = mapSectionBuilder.onSaved
 
     init {
         val mapEntries: MutableList<Setting<V, S>> = mutableListOf()
@@ -46,15 +58,25 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
         this.defaultEntries = defaultMapEntries.toList()
     }
 
-    override val isRegistered: Boolean
-        get() = this.internalIsRegistered
-
-    override fun setRegistered() {
-        this.internalIsRegistered = true
+    override fun onInitialized() {
+        this.internalIsInitialized =  true
+        if (onInitializedFunction != null) {
+            this.onInitializedFunction(this)
+        }
     }
 
-    final override val loadBeforeSave: Boolean
-        get() = true
+    override fun onUpdated() {
+        if (onUpdatedFunction != null) {
+            this.onUpdatedFunction(this)
+        }
+    }
+
+    override fun onSaved() {
+        if (onSavedFunction != null) {
+            this.onSavedFunction(this)
+        }
+    }
+
 
     override fun get(key: String): Setting<V, S>? {
         for (entry: Setting<V, S> in this.entries) {
@@ -116,6 +138,6 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
     protected abstract fun getEntryFromValue(entryPath: ElementPath, defaultValue: V, value: V = defaultValue): Setting<V, S>
 
     override fun toString(): String =
-        "${this::class.simpleName}{name=$name, comment=$comment, entryAmount=${this.entries.size}, registered=$isRegistered, loadBeforeSave=$loadBeforeSave}"
+        "${this::class.simpleName}{name=$name, comment=$comment, entryAmount=${this.entries.size}, initialized=$isInitialized, loadBeforeSave=$loadBeforeSave}"
 
 }

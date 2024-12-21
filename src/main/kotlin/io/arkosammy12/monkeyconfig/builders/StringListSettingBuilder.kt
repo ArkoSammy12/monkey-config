@@ -1,6 +1,6 @@
 package io.arkosammy12.monkeyconfig.builders
 
-import io.arkosammy12.monkeyconfig.settings.Setting
+import io.arkosammy12.monkeyconfig.settings.ListSetting
 import io.arkosammy12.monkeyconfig.settings.StringListSetting
 import io.arkosammy12.monkeyconfig.types.ListType
 import io.arkosammy12.monkeyconfig.types.StringType
@@ -16,5 +16,5 @@ open class StringListSettingBuilder(
 
     override var deserializer: (ListType<StringType>) -> List<String> = { serializedValue -> serializedValue.rawList.map { e -> e.toString() }.toList() }
 
-    override var implementation: (SettingBuilder<List<String>, ListType<StringType>>) -> Setting<List<String>, ListType<StringType>> = ::StringListSetting
+    override var implementation: (ListSettingBuilder<String, StringType>) -> ListSetting<String, StringType> = ::StringListSetting
 }

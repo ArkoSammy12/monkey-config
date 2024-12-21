@@ -1,14 +1,9 @@
 @file:JvmName("SectionUtils")
 
-package io.arkosammy12.monkeyconfig.sections
+package io.arkosammy12.monkeyconfig.base
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig
 import com.electronwill.nightconfig.core.file.FileConfig
-import io.arkosammy12.monkeyconfig.ConfigElement
-import io.arkosammy12.monkeyconfig.ConfigElementContainer
-import io.arkosammy12.monkeyconfig.forEachElement
-import io.arkosammy12.monkeyconfig.settings.Setting
-import io.arkosammy12.monkeyconfig.traverseElements
 
 interface Section : ConfigElement, ConfigElementContainer {
 
@@ -16,15 +11,7 @@ interface Section : ConfigElement, ConfigElementContainer {
 
     val loadBeforeSave: Boolean
 
-    val isRegistered: Boolean
-
-    fun setRegistered()
-
-    fun onRegistered() {}
-
-    fun onLoaded() {}
-
-    fun onSavedToFile() {}
+    val isInitialized: Boolean
 
     fun saveWithDefaultValues(fileConfig: FileConfig) {
         this.forEachElement<Setting<*, *>> { setting -> setting.value.reset() }
@@ -37,6 +24,7 @@ interface Section : ConfigElement, ConfigElementContainer {
         }
         this.forEachElement<ConfigElement> { element ->
             element.updateValue(fileConfig)
+            element.onUpdated()
         }
         this.comment?.let { comment ->
             if (fileConfig is CommentedFileConfig) fileConfig.setComment(this.path.string, comment)
@@ -46,6 +34,7 @@ interface Section : ConfigElement, ConfigElementContainer {
     override fun updateValue(fileConfig: FileConfig) {
         this.forEachElement<ConfigElement> { element ->
             element.saveValue(fileConfig)
+            element.onSaved()
         }
     }
 

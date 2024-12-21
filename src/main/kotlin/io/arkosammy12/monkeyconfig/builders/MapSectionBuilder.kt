@@ -5,19 +5,17 @@ import io.arkosammy12.monkeyconfig.types.SerializableType
 import io.arkosammy12.monkeyconfig.util.ElementPath
 
 open class MapSectionBuilder<V : Any, S : SerializableType<*>>(
-    val name: String,
+    name: String,
     val parent: SectionBuilder? = null
-) {
-
-    open var comment: String? = null
+) : ConfigElementBuilder<MapSection<V, S>, MapSectionBuilder<V, S>>(name) {
 
     open lateinit var serializer: (V) -> S
 
     open lateinit var deserializer: (S) -> V
 
-    open lateinit var implementation: (MapSectionBuilder<V, S>) -> MapSection<V, S>
+    override lateinit var implementation: (MapSectionBuilder<V, S>) -> MapSection<V, S>
 
-    internal val path: ElementPath = this.getPath()
+    override val path: ElementPath = this.getPath()
 
     internal val defaultEntries: MutableMap<String, V> = mutableMapOf()
 
@@ -45,7 +43,7 @@ open class MapSectionBuilder<V : Any, S : SerializableType<*>>(
         traverseToParent(parent, consumer)
     }
 
-    fun build(): MapSection<V, S> =
+    override fun build(): MapSection<V, S> =
         this.implementation(this)
 
 }

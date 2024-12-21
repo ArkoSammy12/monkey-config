@@ -2,13 +2,16 @@
 
 package io.arkosammy12.monkeyconfig.managers
 
+import io.arkosammy12.monkeyconfig.base.ConfigManager
+import io.arkosammy12.monkeyconfig.base.getSetting
+import io.arkosammy12.monkeyconfig.base.traverseSections
 import io.arkosammy12.monkeyconfig.sections.maps.MapSection
 import io.arkosammy12.monkeyconfig.sections.maps.StringMapSection
 import io.arkosammy12.monkeyconfig.settings.BooleanSetting
 import io.arkosammy12.monkeyconfig.settings.EnumSetting
 import io.arkosammy12.monkeyconfig.settings.ListSetting
 import io.arkosammy12.monkeyconfig.settings.NumberSetting
-import io.arkosammy12.monkeyconfig.settings.Setting
+import io.arkosammy12.monkeyconfig.base.Setting
 import io.arkosammy12.monkeyconfig.settings.StringListSetting
 import io.arkosammy12.monkeyconfig.settings.StringSetting
 import io.arkosammy12.monkeyconfig.util.ElementPath

@@ -2,7 +2,7 @@ package io.arkosammy12.monkeyconfig.sections.maps
 
 import io.arkosammy12.monkeyconfig.builders.MapSectionBuilder
 import io.arkosammy12.monkeyconfig.builders.StringSettingBuilder
-import io.arkosammy12.monkeyconfig.settings.Setting
+import io.arkosammy12.monkeyconfig.base.Setting
 import io.arkosammy12.monkeyconfig.settings.StringSetting
 import io.arkosammy12.monkeyconfig.types.SerializableType
 import io.arkosammy12.monkeyconfig.types.StringType

@@ -1,24 +1,19 @@
 package io.arkosammy12.monkeyconfig.builders
 
-import io.arkosammy12.monkeyconfig.settings.Setting
+import io.arkosammy12.monkeyconfig.base.Setting
 import io.arkosammy12.monkeyconfig.types.SerializableType
 import io.arkosammy12.monkeyconfig.util.ElementPath
 
-open class SettingBuilder<T : Any, S : SerializableType<*>>(
-    val name: String,
-    val defaultValue: T,
-    val path: ElementPath
-) {
+abstract class SettingBuilder<V : Any, S : SerializableType<*>, I : Setting<V, S>, T : SettingBuilder<V, S, I, T>>(
+    name: String,
+    val defaultValue: V,
+    override val path: ElementPath
+) : ConfigElementBuilder<I, T>(name) {
 
-    open var comment: String? = null
+    open lateinit var serializer: (V) -> S
 
-    open lateinit var serializer: (T) -> S
+    open lateinit var deserializer: (S) -> V
 
-    open lateinit var deserializer: (S) -> T
-
-    open lateinit var implementation: (SettingBuilder<T, S>) -> Setting<T, S>
-
-    internal open fun build(): Setting<T, S> =
-        this.implementation(this)
+    override lateinit var implementation: (T) -> I
 
 }

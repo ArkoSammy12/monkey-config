@@ -1,45 +1,34 @@
 package io.arkosammy12.monkeyconfig.builders
 
 import io.arkosammy12.monkeyconfig.sections.DefaultSection
-import io.arkosammy12.monkeyconfig.sections.Section
+import io.arkosammy12.monkeyconfig.base.Section
+import io.arkosammy12.monkeyconfig.base.Setting
 import io.arkosammy12.monkeyconfig.types.SerializableType
 import io.arkosammy12.monkeyconfig.types.StringType
 import io.arkosammy12.monkeyconfig.util.ElementPath
 
 open class SectionBuilder(
-    val name: String,
+    name: String,
     val manager: ConfigManagerBuilder,
     var parent: SectionBuilder? = null
-) {
+) : ConfigElementBuilder<Section, SectionBuilder>(name) {
 
-    open var comment: String? = null
+    override val path: ElementPath = this.getPath()
 
     open var loadBeforeSave: Boolean = false
 
-    open var implementation: (SectionBuilder) -> Section = ::DefaultSection
+    val configElementBuilders: List<ConfigElementBuilder<*, *>>
+        get() = this.internalConfigElementBuilders.toList()
 
-    val sectionBuilders: List<SectionBuilder>
-        get() = internalSectionBuilders.toList()
+    protected val internalConfigElementBuilders: MutableList<ConfigElementBuilder<*, *>> = mutableListOf()
 
-    val mapSectionBuilders: List<MapSectionBuilder<*, *>>
-        get() = internalMapSectionBuilders.toList()
+    override var implementation: (SectionBuilder) -> Section = ::DefaultSection
 
-    val settingBuilders: List<SettingBuilder<*, *>>
-        get() = internalSettingBuilders.toList()
-
-    protected val internalSectionBuilders: MutableList<SectionBuilder> = mutableListOf()
-
-    protected val internalMapSectionBuilders: MutableList<MapSectionBuilder<*, *>> = mutableListOf()
-
-    protected val internalSettingBuilders: MutableList<SettingBuilder<*, *>> = mutableListOf()
-
-    internal val path: ElementPath = this.getPath()
-
-    fun <T : Any, S : SerializableType<*>, B : SettingBuilder<T, S>> setting(settingName: String, defaultValue: T, builderInstanceProvider: (String, T, ElementPath) -> B, builder: B.() -> Unit): ElementPath {
+    fun <V : Any, S : SerializableType<*>, I : Setting<V, S>, T : SettingBuilder<V, S, I, T>> setting(settingName: String, defaultValue: V, builderInstanceProvider: (String, V, ElementPath) -> T, builder: T.() -> Unit): ElementPath {
         val path: ElementPath = this.path.withAppendedNode(settingName)
         val settingBuilder = builderInstanceProvider(settingName, defaultValue, path)
         builder(settingBuilder)
-        this.internalSettingBuilders.add(settingBuilder)
+        this.internalConfigElementBuilders.add(settingBuilder)
         return path
     }
 
@@ -67,13 +56,13 @@ open class SectionBuilder(
     fun section(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder, SectionBuilder?) -> SectionBuilder = ::SectionBuilder, builder: SectionBuilder.() -> Unit) {
         val sectionBuilder: SectionBuilder = builderInstanceProvider(sectionName, this.manager, this)
         builder(sectionBuilder)
-        this.internalSectionBuilders.add(sectionBuilder)
+        this.internalConfigElementBuilders.add(sectionBuilder)
     }
 
-    fun <V : Any, S : SerializableType<*>, B : MapSectionBuilder<V, S>> mapSection(sectionName: String, builderInstanceProvider: (String, SectionBuilder) -> B, builder: B.() -> Unit): ElementPath {
+    fun <V : Any, S : SerializableType<*>, T : MapSectionBuilder<V, S>> mapSection(sectionName: String, builderInstanceProvider: (String, SectionBuilder) -> T, builder: T.() -> Unit): ElementPath {
         val mapSectionBuilder = builderInstanceProvider(sectionName, this)
         builder(mapSectionBuilder)
-        this.internalMapSectionBuilders.add(mapSectionBuilder)
+        this.internalConfigElementBuilders.add(mapSectionBuilder)
         return mapSectionBuilder.path
     }
 
@@ -103,7 +92,7 @@ open class SectionBuilder(
         traverseToParent(parent, consumer)
     }
 
-    internal open fun build(): Section =
+    override fun build(): Section =
         this.implementation(this)
 
 }

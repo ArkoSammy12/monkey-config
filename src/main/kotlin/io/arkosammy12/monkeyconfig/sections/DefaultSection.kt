@@ -2,10 +2,9 @@ package io.arkosammy12.monkeyconfig.sections
 
 import com.electronwill.nightconfig.core.Config
 import com.electronwill.nightconfig.core.file.FileConfig
-import io.arkosammy12.monkeyconfig.ConfigElement
-import io.arkosammy12.monkeyconfig.builders.MapSectionBuilder
+import io.arkosammy12.monkeyconfig.base.ConfigElement
+import io.arkosammy12.monkeyconfig.builders.ConfigElementBuilder
 import io.arkosammy12.monkeyconfig.builders.SectionBuilder
-import io.arkosammy12.monkeyconfig.builders.SettingBuilder
 
 class DefaultSection(
     sectionBuilder: SectionBuilder,
@@ -15,19 +14,14 @@ class DefaultSection(
 
     init {
         val configElements: MutableList<ConfigElement> = mutableListOf()
-        for (settingBuilder: SettingBuilder<*, *> in sectionBuilder.settingBuilders) {
-            configElements.add(settingBuilder.build())
+        for (configElementBuilder: ConfigElementBuilder<*, *> in sectionBuilder.configElementBuilders) {
+            val configElement: ConfigElement = configElementBuilder.build()
+            configElements.add(configElement)
         }
-        for (sectionBuilder: SectionBuilder in sectionBuilder.sectionBuilders) {
-             configElements.add(sectionBuilder.build())
-        }
-        for (mapSectionBuilder: MapSectionBuilder<*, *> in sectionBuilder.mapSectionBuilders) {
-            configElements.add(mapSectionBuilder.build())
-        }
+
         this.configElements = configElements.toList()
 
-        // Prevent accidental duplicates
-        // TODO: TEST THIS
+        // TODO: Make sure there are no accidental duplicates
         //sectionBuilder.internalSettingBuilders.clear()
         //sectionBuilder.subSections.clear()
     }

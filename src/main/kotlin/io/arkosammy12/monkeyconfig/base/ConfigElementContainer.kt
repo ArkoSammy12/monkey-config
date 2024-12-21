@@ -1,4 +1,4 @@
-package io.arkosammy12.monkeyconfig
+package io.arkosammy12.monkeyconfig.base
 
 import io.arkosammy12.monkeyconfig.util.ElementPath
 
@@ -52,22 +52,3 @@ inline fun <reified T : ConfigElement> ConfigElementContainer.forEachElement(noi
 inline fun <reified T : ConfigElement> ConfigElementContainer.traverseElements(currentElement: ConfigElementContainer? = null, noinline action: (T) -> Unit) {
     this.traverseElements(T::class.java, currentElement, action)
 }
-
-/*
-fun ConfigElementContainer.containsElement(elementPath: ElementPath): Boolean =
-    this.containsElement<ConfigElement>(elementPath)
-
-fun ConfigElementContainer.getConfigElement(elementPath: ElementPath): ConfigElement? =
-    this.getConfigElement<ConfigElement>(elementPath)
-
-fun ConfigElementContainer.forEachElement(action: (ConfigElement) -> Unit) {
-    this.forEachElement<ConfigElement>(action)
-}
-
-@JvmOverloads
-fun ConfigElementContainer.traverseElements(currentElement: ConfigElementContainer? = null, action: (ConfigElement) -> Unit) {
-    this.traverseElements<ConfigElement>(currentElement, action)
-}
-
- */
-

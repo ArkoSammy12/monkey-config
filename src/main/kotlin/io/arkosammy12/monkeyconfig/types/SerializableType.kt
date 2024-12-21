@@ -2,7 +2,7 @@
 
 package io.arkosammy12.monkeyconfig.types
 
-import io.arkosammy12.monkeyconfig.settings.Setting
+import io.arkosammy12.monkeyconfig.base.Setting
 
 sealed interface SerializableType<T : Any> {
 

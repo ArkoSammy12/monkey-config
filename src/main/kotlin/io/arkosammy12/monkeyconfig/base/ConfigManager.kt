@@ -1,13 +1,6 @@
-package io.arkosammy12.monkeyconfig.managers
+package io.arkosammy12.monkeyconfig.base
 
 import com.electronwill.nightconfig.core.ConfigFormat
-import io.arkosammy12.monkeyconfig.ConfigElement
-import io.arkosammy12.monkeyconfig.ConfigElementContainer
-import io.arkosammy12.monkeyconfig.forEachElement
-import io.arkosammy12.monkeyconfig.sections.Section
-import io.arkosammy12.monkeyconfig.sections.traverseSections
-import io.arkosammy12.monkeyconfig.settings.Setting
-import io.arkosammy12.monkeyconfig.traverseElements
 import io.arkosammy12.monkeyconfig.util.ElementPath
 import java.nio.file.Path
 

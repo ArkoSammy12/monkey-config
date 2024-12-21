@@ -1,5 +1,8 @@
 package io.arkosammy12.monkeyconfig.sections
 
+import io.arkosammy12.monkeyconfig.base.Section
+import io.arkosammy12.monkeyconfig.base.sections
+import io.arkosammy12.monkeyconfig.base.settings
 import io.arkosammy12.monkeyconfig.builders.SectionBuilder
 import io.arkosammy12.monkeyconfig.util.ElementPath
 
@@ -15,16 +18,37 @@ abstract class AbstractSection(
 
     override val loadBeforeSave: Boolean = sectionBuilder.loadBeforeSave
 
-    protected var internalIsRegistered: Boolean = false
+    protected var internalIsInitialized: Boolean = false
 
-    override val isRegistered: Boolean
-        get() = this.internalIsRegistered
+    protected val onInitializedFunction: ((Section) -> Unit)? = sectionBuilder.onInitialized
 
-    override fun setRegistered() {
-        this.internalIsRegistered = true
+    protected val onUpdatedFunction: ((Section) ->  Unit)? = sectionBuilder.onUpdated
+
+    protected val onSavedFunction: ((Section) -> Unit)? = sectionBuilder.onSaved
+
+    override val isInitialized: Boolean
+        get() = this.internalIsInitialized
+
+    override fun onInitialized() {
+        this.internalIsInitialized =  true
+        if (onInitializedFunction != null) {
+            this.onInitializedFunction(this)
+        }
+    }
+
+    override fun onUpdated() {
+        if (onUpdatedFunction != null) {
+            this.onUpdatedFunction(this)
+        }
+    }
+
+    override fun onSaved() {
+        if (onSavedFunction != null) {
+            this.onSavedFunction(this)
+        }
     }
 
     override fun toString(): String =
-        "${this::class.simpleName}{name=$name, comment=$comment, settingAmount=${this.settings.size}, subSectionAmount=${this.sections.size}, registered=$isRegistered, loadBeforeSave=$loadBeforeSave}"
+        "${this::class.simpleName}{name=$name, comment=$comment, settingAmount=${this.settings.size}, subSectionAmount=${this.sections.size}, initialized=$isInitialized, loadBeforeSave=$loadBeforeSave}"
 
 }

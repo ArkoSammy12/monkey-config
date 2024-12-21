@@ -2,11 +2,11 @@ package io.arkosammy12.monkeyconfig.values
 
 import io.arkosammy12.monkeyconfig.types.SerializableType
 
-open class SettingValue<T : Any, S : SerializableType<*>>(
-    val default: T,
-    open var raw: T = default,
-    private val serializer: (T) -> S,
-    private val deserializer: (S) -> T
+open class SettingValue<V : Any, S : SerializableType<*>>(
+    val default: V,
+    open var raw: V = default,
+    private val serializer: (V) -> S,
+    private val deserializer: (S) -> V
 ) {
 
     open val serialized: S

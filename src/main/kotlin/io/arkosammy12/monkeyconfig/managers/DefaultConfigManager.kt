@@ -5,16 +5,15 @@ import com.electronwill.nightconfig.core.ConfigFormat
 import com.electronwill.nightconfig.core.file.FileConfig
 import com.electronwill.nightconfig.core.file.GenericBuilder
 import org.slf4j.Logger
-import io.arkosammy12.monkeyconfig.ConfigElement
-import io.arkosammy12.monkeyconfig.ConfigElementContainer
+import io.arkosammy12.monkeyconfig.base.ConfigElement
+import io.arkosammy12.monkeyconfig.base.ConfigElementContainer
+import io.arkosammy12.monkeyconfig.base.ConfigManager
 import io.arkosammy12.monkeyconfig.builders.ConfigManagerBuilder
-import io.arkosammy12.monkeyconfig.builders.MapSectionBuilder
-import io.arkosammy12.monkeyconfig.builders.SectionBuilder
-import io.arkosammy12.monkeyconfig.builders.SettingBuilder
-import io.arkosammy12.monkeyconfig.forEachElement
-import io.arkosammy12.monkeyconfig.sections.Section
-import io.arkosammy12.monkeyconfig.sections.maps.MapSection
-import io.arkosammy12.monkeyconfig.settings.Setting
+import io.arkosammy12.monkeyconfig.base.forEachElement
+import io.arkosammy12.monkeyconfig.base.sections
+import io.arkosammy12.monkeyconfig.base.settings
+import io.arkosammy12.monkeyconfig.base.traverseSections
+import io.arkosammy12.monkeyconfig.builders.ConfigElementBuilder
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -63,40 +62,23 @@ open class DefaultConfigManager(
     init {
         System.setProperty("nightconfig.preserveInsertionOrder", "true")
         val newConfigElements: MutableList<ConfigElement> = mutableListOf()
-        for (sectionBuilder: SectionBuilder in configManagerBuilder.sectionBuilders) {
-            val section: Section = sectionBuilder.build()
-            newConfigElements.add(section)
-        }
-        for (mapSectionBuilder: MapSectionBuilder<*, *> in configManagerBuilder.mapSectionBuilders) {
-            val mapSection: MapSection<*, *> = mapSectionBuilder.build()
-            newConfigElements.add(mapSection)
-
-        }
-        for (settingBuilder: SettingBuilder<*, *> in configManagerBuilder.settingBuilders) {
-            val setting: Setting<*, *> = settingBuilder.build()
-            newConfigElements.add(setting)
+        for (configElementBuilder: ConfigElementBuilder<*, *> in configManagerBuilder.configElementBuilders) {
+            val configElement: ConfigElement = configElementBuilder.build()
+            newConfigElements.add(configElement)
         }
         this.configElements = newConfigElements.toList()
-        /*
-        this.traverseSections { section ->
-            section.setRegistered()
-            section.onRegistered()
-        }
-
-         */
-
         this.checkForElementNameUniqueness()
         this.ifConfigPresent { fileConfig ->
             fileConfig.load()
-            /*
-            this.traverseSections { section ->
-                section.loadValues(fileConfig)
-                section.onLoaded()
+            this.forEachElement<ConfigElement> { element ->
+                element.updateValue(fileConfig)
+                element.onInitialized()
             }
-
-             */
-            this.forEachElement<ConfigElement> { element -> element.updateValue(fileConfig) }
-            this.saveToFile()
+            this.forEachElement<ConfigElement> { element ->
+                element.saveValue(fileConfig)
+            }
+            fileConfig.entrySet().removeIf { entry -> this.configElements.none { element -> element.path.asList.last() == entry.key  } }
+            fileConfig.save()
             this.logger?.info("Loaded setting values for $this from config file at: ${this.filePath}")
             return@ifConfigPresent true
         }
@@ -106,7 +88,10 @@ open class DefaultConfigManager(
     override fun loadFromFile(): Boolean {
         return this.ifConfigPresent { fileConfig ->
             fileConfig.load()
-            this.forEachElement<ConfigElement> { element -> element.updateValue(fileConfig) }
+            this.forEachElement<ConfigElement> { element ->
+                element.updateValue(fileConfig)
+                element.onUpdated()
+            }
             return@ifConfigPresent true
         }
     }
@@ -114,16 +99,12 @@ open class DefaultConfigManager(
     override fun saveToFile(): Boolean {
         return this.ifConfigPresent { fileConfig ->
             fileConfig.load()
-
-            this.forEachElement<ConfigElement> { element -> element.updateValue(fileConfig) }
+            this.forEachElement<ConfigElement> { element ->
+                element.saveValue(fileConfig)
+                element.onSaved()
+            }
             fileConfig.entrySet().removeIf { entry -> this.configElements.none { element -> element.path.asList.last() == entry.key  } }
             fileConfig.save()
-            /*
-            this.traverseSections { section ->
-                section.onSavedToFile()
-            }
-
-             */
             return@ifConfigPresent true
         }
     }

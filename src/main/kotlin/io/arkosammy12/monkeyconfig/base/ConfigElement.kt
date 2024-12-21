@@ -1,11 +1,9 @@
-package io.arkosammy12.monkeyconfig
+package io.arkosammy12.monkeyconfig.base
 
 import com.electronwill.nightconfig.core.file.FileConfig
 import io.arkosammy12.monkeyconfig.util.ElementPath
 
-// TODO: Integrate this better into the API: Mirror this hierarchy in the builder classes,
-//  utilize this for lookup methods within sections and config managers
-interface ConfigElement {
+sealed interface ConfigElement {
 
     val name: String
 
@@ -16,5 +14,11 @@ interface ConfigElement {
     fun saveValue(fileConfig: FileConfig)
 
     fun updateValue(fileConfig: FileConfig)
+
+    fun onInitialized() {}
+
+    fun onUpdated() {}
+
+    fun onSaved() {}
 
 }

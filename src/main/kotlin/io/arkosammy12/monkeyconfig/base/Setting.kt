@@ -1,8 +1,8 @@
-package io.arkosammy12.monkeyconfig.settings
+package io.arkosammy12.monkeyconfig.base
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig
 import com.electronwill.nightconfig.core.file.FileConfig
-import io.arkosammy12.monkeyconfig.ConfigElement
+import io.arkosammy12.monkeyconfig.settings.EnumSetting
 import io.arkosammy12.monkeyconfig.types.ListType
 import io.arkosammy12.monkeyconfig.types.SerializableType
 import io.arkosammy12.monkeyconfig.types.setValueSafely
@@ -10,9 +10,9 @@ import io.arkosammy12.monkeyconfig.types.toSerializedType
 import io.arkosammy12.monkeyconfig.util.ElementPath
 import io.arkosammy12.monkeyconfig.values.SettingValue
 
-interface Setting<T : Any, S : SerializableType<*>> : ConfigElement {
+interface Setting<V : Any, S : SerializableType<*>> : ConfigElement {
 
-    val value: SettingValue<T, S>
+    val value: SettingValue<V, S>
 
     override fun saveValue(fileConfig: FileConfig) {
         val settingPath: ElementPath = this.path
