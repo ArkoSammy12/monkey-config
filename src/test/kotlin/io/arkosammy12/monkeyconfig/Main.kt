@@ -43,8 +43,8 @@ object Main {
                     }
                     listSetting<String, StringType>("list", listOf("ArkoSammy12")) {
                         implementation = ::StringListSetting
-                        serializer = { list -> ListType<StringType>(list.map { e -> StringType(e) }.toList()) }
-                        deserializer = { serializedList -> serializedList.value.map { e -> e.value.toString() }.toList()  }
+                        serializer = { list -> ListType<StringType>(list.map(::StringType).toList()) }
+                        deserializer = { serializedList -> serializedList.value.map { e -> e.value.toString() }.toList() }
                     }
                 }
             }

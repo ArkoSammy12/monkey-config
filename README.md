@@ -1,7 +1,7 @@
 # Monkey Config
 
 ```kotlin
-val configManager = tomlConfigManager("myFileConfig", somePath.resolve("test.toml")) {
+val configManager = tomlConfigManager("myFileConfig", TEST_PATH.resolve("test.toml")) {
     booleanSetting("monkeyStyle", true) {
         comment = "This is true by default!"
     }
@@ -22,11 +22,10 @@ val configManager = tomlConfigManager("myFileConfig", somePath.resolve("test.tom
             }
             listSetting<String, StringType>("list", listOf("ArkoSammy12")) {
                 implementation = ::StringListSetting
-                serializer = { list -> ListType<StringType>(list.map { e -> StringType(e) }.toList()) }
-                deserializer = { serializedList -> serializedList.value.map { e -> e.value.toString() }.toList()  }
+                serializer = { list -> ListType<StringType>(list.map(::StringType).toList()) }
+                deserializer = { serializedList -> serializedList.value.map { e -> e.value.toString() }.toList() }
             }
         }
     }
 }
-configManager.saveToFile()
 ```
