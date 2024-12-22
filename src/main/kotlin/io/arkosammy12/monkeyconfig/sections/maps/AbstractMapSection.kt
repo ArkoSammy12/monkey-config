@@ -10,6 +10,7 @@ import io.arkosammy12.monkeyconfig.types.ListType
 import io.arkosammy12.monkeyconfig.types.SerializableType
 import io.arkosammy12.monkeyconfig.types.toSerializedType
 import io.arkosammy12.monkeyconfig.util.ElementPath
+import org.slf4j.Logger
 
 abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
     mapSectionBuilder: MapSectionBuilder<V, S>
@@ -45,6 +46,8 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
     protected val onUpdatedFunction: ((MapSection<V, S>) ->  Unit)? = mapSectionBuilder.onUpdated
 
     protected val onSavedFunction: ((MapSection<V, S>) -> Unit)? = mapSectionBuilder.onSaved
+
+    protected val logger: Logger? = mapSectionBuilder.logger
 
     init {
         val mapEntries: MutableList<Setting<V, S>> = mutableListOf()
@@ -113,9 +116,9 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
         }
     }
 
-    override fun updateValue(fileConfig: FileConfig) {
+    override fun  updateValue(fileConfig: FileConfig) {
         val config: Config = fileConfig.get(this.path.string) ?: run {
-            // TODO: LOG
+            this.logger?.error("Found no Section with name ${this.name} to load values from!")
             return
         }
         val tempEntries: MutableList<Setting<V, S>> = mutableListOf()
@@ -124,7 +127,7 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
             val serializedEntryValue: SerializableType<*> = toSerializedType(rawEntryValue)
             val newMapEntry: Setting<V, S>? = this.getEntryFromSerialized(ElementPath(*this.path.asArray, entry.key), serializedEntryValue)
             if (newMapEntry == null) {
-                // TODO: LOG
+                this.logger?.error("Unable to read value of entry ${entry.key}, from MapSection ${this.name}! This entry will be skipped.")
                 continue
             }
             tempEntries.add(newMapEntry)

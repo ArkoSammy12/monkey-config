@@ -5,6 +5,7 @@ import io.arkosammy12.monkeyconfig.base.sections
 import io.arkosammy12.monkeyconfig.base.settings
 import io.arkosammy12.monkeyconfig.builders.SectionBuilder
 import io.arkosammy12.monkeyconfig.util.ElementPath
+import org.slf4j.Logger
 
 abstract class AbstractSection(
     sectionBuilder: SectionBuilder,
@@ -25,6 +26,8 @@ abstract class AbstractSection(
     protected val onUpdatedFunction: ((Section) ->  Unit)? = sectionBuilder.onUpdated
 
     protected val onSavedFunction: ((Section) -> Unit)? = sectionBuilder.onSaved
+
+    protected val logger: Logger? = sectionBuilder.logger
 
     override val isInitialized: Boolean
         get() = this.internalIsInitialized

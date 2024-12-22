@@ -20,10 +20,6 @@ class DefaultSection(
         }
 
         this.configElements = configElements.toList()
-
-        // TODO: Make sure there are no accidental duplicates
-        //sectionBuilder.internalSettingBuilders.clear()
-        //sectionBuilder.subSections.clear()
     }
 
 

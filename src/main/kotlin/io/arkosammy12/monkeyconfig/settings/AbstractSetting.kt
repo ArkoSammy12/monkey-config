@@ -4,6 +4,7 @@ import io.arkosammy12.monkeyconfig.base.Setting
 import io.arkosammy12.monkeyconfig.builders.SettingBuilder
 import io.arkosammy12.monkeyconfig.types.SerializableType
 import io.arkosammy12.monkeyconfig.util.ElementPath
+import org.slf4j.Logger
 
 abstract class AbstractSetting<T : Any, S : SerializableType<*>, I : AbstractSetting<T, S, I>>(
     settingBuilder: SettingBuilder<T, S, I, *>
@@ -20,6 +21,8 @@ abstract class AbstractSetting<T : Any, S : SerializableType<*>, I : AbstractSet
     protected val onSavedFunction: ((I) -> Unit)? = settingBuilder.onSaved
 
     protected val onUpdatedFunction: ((I) -> Unit)? = settingBuilder.onUpdated
+
+    protected val logger: Logger? =  settingBuilder.logger
 
     override fun toString(): String =
         "${this::class.simpleName}{name=$name, path=$path, value=$value, comment=$comment}"

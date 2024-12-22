@@ -19,6 +19,10 @@ open class MapSectionBuilder<V : Any, S : SerializableType<*>>(
 
     internal val defaultEntries: MutableMap<String, V> = mutableMapOf()
 
+    init {
+        this.logger = parent?.logger
+    }
+
     fun addDefaultEntry(entry: Pair<String, V>) {
         val key: String = entry.first
         val value: V = entry.second

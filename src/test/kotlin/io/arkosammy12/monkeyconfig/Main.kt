@@ -29,7 +29,7 @@ object Main {
                     comment = "Test comment"
                     minValue = 0
                     maxValue = 10
-                    implementation = { builder -> TestNumberSetting(builder) }
+                    implementation = ::TestNumberSetting
                 }
                 section("testSubsection") {
                     comment = "Test comment"

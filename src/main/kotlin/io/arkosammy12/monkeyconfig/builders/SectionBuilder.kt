@@ -24,10 +24,15 @@ open class SectionBuilder(
 
     override var implementation: (SectionBuilder) -> Section = ::DefaultSection
 
+    init {
+        this.logger = parent?.logger
+    }
+
     fun <V : Any, S : SerializableType<*>, I : Setting<V, S>, T : SettingBuilder<V, S, I, T>> setting(settingName: String, defaultValue: V, builderInstanceProvider: (String, V, ElementPath) -> T, builder: T.() -> Unit): ElementPath {
         val path: ElementPath = this.path.withAppendedNode(settingName)
         val settingBuilder = builderInstanceProvider(settingName, defaultValue, path)
         builder(settingBuilder)
+        settingBuilder.logger = this.logger
         this.internalConfigElementBuilders.add(settingBuilder)
         return path
     }
@@ -56,12 +61,14 @@ open class SectionBuilder(
     fun section(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder, SectionBuilder?) -> SectionBuilder = ::SectionBuilder, builder: SectionBuilder.() -> Unit) {
         val sectionBuilder: SectionBuilder = builderInstanceProvider(sectionName, this.manager, this)
         builder(sectionBuilder)
+        sectionBuilder.logger = this.logger
         this.internalConfigElementBuilders.add(sectionBuilder)
     }
 
     fun <V : Any, S : SerializableType<*>, T : MapSectionBuilder<V, S>> mapSection(sectionName: String, builderInstanceProvider: (String, SectionBuilder) -> T, builder: T.() -> Unit): ElementPath {
         val mapSectionBuilder = builderInstanceProvider(sectionName, this)
         builder(mapSectionBuilder)
+        mapSectionBuilder.logger = this.logger
         this.internalConfigElementBuilders.add(mapSectionBuilder)
         return mapSectionBuilder.path
     }

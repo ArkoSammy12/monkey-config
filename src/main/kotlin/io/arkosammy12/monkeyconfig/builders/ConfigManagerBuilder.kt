@@ -39,6 +39,7 @@ open class ConfigManagerBuilder(
         val path = ElementPath(settingName)
         val settingBuilder: T = builderInstanceProvider(settingName, defaultValue, path)
         builder(settingBuilder)
+        settingBuilder.logger = this.logger
         this.internalConfigElementBuilders.add(settingBuilder)
         return path
     }
@@ -67,12 +68,14 @@ open class ConfigManagerBuilder(
     fun section(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder) -> SectionBuilder = ::SectionBuilder, builder: SectionBuilder.() -> Unit) {
         val sectionBuilder: SectionBuilder = builderInstanceProvider(sectionName, this)
         builder(sectionBuilder)
+        sectionBuilder.logger = this.logger
         this.internalConfigElementBuilders.add(sectionBuilder)
     }
 
     fun <V : Any, S : SerializableType<*>, T : MapSectionBuilder<V, S>> mapSection(sectionName: String, builderInstanceProvider: (String) -> T, builder: T.() -> Unit): ElementPath {
         val mapSectionBuilder = builderInstanceProvider(sectionName)
         builder(mapSectionBuilder)
+        mapSectionBuilder.logger = this.logger
         this.internalConfigElementBuilders.add(mapSectionBuilder)
         return mapSectionBuilder.path
     }
@@ -82,7 +85,6 @@ open class ConfigManagerBuilder(
 
 }
 
-// TODO: Add some way to add the file extension or atleast warn the user to use the correct file extension in the file path
 @JvmOverloads
 fun <C : Config, T : ConfigFormat<C>> configManager(fileName: String, fileFormat: T, filePath: Path, builderInstanceProvider: (String, T, Path) -> ConfigManagerBuilder = ::ConfigManagerBuilder, builder: ConfigManagerBuilder.() -> Unit): ConfigManager {
     if (fileName.contains(".")) {

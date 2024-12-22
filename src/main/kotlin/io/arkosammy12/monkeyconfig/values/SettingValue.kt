@@ -1,10 +1,12 @@
 package io.arkosammy12.monkeyconfig.values
 
 import io.arkosammy12.monkeyconfig.types.SerializableType
+import org.slf4j.Logger
 
-open class SettingValue<V : Any, S : SerializableType<*>>(
+open class SettingValue<V : Any, S : SerializableType<*>> @JvmOverloads constructor(
     val default: V,
     open var raw: V = default,
+    protected val logger: Logger? = null,
     private val serializer: (V) -> S,
     private val deserializer: (S) -> V
 ) {
