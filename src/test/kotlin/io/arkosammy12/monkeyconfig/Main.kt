@@ -41,11 +41,7 @@ object Main {
                     booleanSetting("enabled", true) {
                         comment = "Default is true"
                     }
-                    listSetting<String, StringType>("list", listOf("ArkoSammy12")) {
-                        implementation = ::StringListSetting
-                        serializer = { list -> ListType<StringType>(list.map(::StringType).toList()) }
-                        deserializer = { serializedList -> serializedList.value.map { e -> e.value.toString() }.toList() }
-                    }
+                    stringListSetting("list", listOf("ArkoSammy12")) {}
                 }
             }
         }

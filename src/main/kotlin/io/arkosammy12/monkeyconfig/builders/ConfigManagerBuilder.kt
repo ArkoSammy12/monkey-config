@@ -56,11 +56,8 @@ open class ConfigManagerBuilder(
     fun <E : Any, S : SerializableType<*>> listSetting(settingName: String, defaultValue: List<E>, builder: ListSettingBuilder<E, S>.() -> Unit): ElementPath =
         this.setting(settingName, defaultValue, ::ListSettingBuilder, builder)
 
-    // TODO: Fix this
-    fun stringListSetting(settingName: String, defaultValue: List<String>, builder: StringListSettingBuilder.() -> Unit): ElementPath  =
-        this.listSetting<String, StringType>(settingName, defaultValue) {
-            builder(this as StringListSettingBuilder)
-        }
+    fun stringListSetting(settingName: String, defaultValue: List<String>, builder: ListSettingBuilder<String, StringType>.() -> Unit): ElementPath  =
+        this.setting(settingName, defaultValue, ::StringListSettingBuilder, builder)
 
     fun <E : Enum<E>> enumSetting(settingName: String, defaultValue: E, builder: EnumSettingBuilder<E>.() -> Unit): ElementPath =
         this.setting(settingName, defaultValue, ::EnumSettingBuilder, builder)
