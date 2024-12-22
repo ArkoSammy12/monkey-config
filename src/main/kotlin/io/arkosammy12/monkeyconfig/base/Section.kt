@@ -23,8 +23,8 @@ interface Section : ConfigElement, ConfigElementContainer {
             this.updateValue(fileConfig)
         }
         this.forEachElement<ConfigElement> { element ->
-            element.updateValue(fileConfig)
-            element.onUpdated()
+            element.saveValue(fileConfig)
+            element.onSaved()
         }
         this.comment?.let { comment ->
             if (fileConfig is CommentedFileConfig) fileConfig.setComment(this.path.string, comment)
@@ -33,8 +33,8 @@ interface Section : ConfigElement, ConfigElementContainer {
 
     override fun updateValue(fileConfig: FileConfig) {
         this.forEachElement<ConfigElement> { element ->
-            element.saveValue(fileConfig)
-            element.onSaved()
+            element.updateValue(fileConfig)
+            element.onUpdated()
         }
     }
 

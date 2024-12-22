@@ -12,6 +12,7 @@ import io.arkosammy12.monkeyconfig.builders.ConfigManagerBuilder
 import io.arkosammy12.monkeyconfig.base.forEachElement
 import io.arkosammy12.monkeyconfig.base.sections
 import io.arkosammy12.monkeyconfig.base.settings
+import io.arkosammy12.monkeyconfig.base.traverseElements
 import io.arkosammy12.monkeyconfig.base.traverseSections
 import io.arkosammy12.monkeyconfig.builders.ConfigElementBuilder
 import java.nio.file.Files
@@ -72,6 +73,8 @@ open class DefaultConfigManager(
             fileConfig.load()
             this.forEachElement<ConfigElement> { element ->
                 element.updateValue(fileConfig)
+            }
+            this.traverseElements<ConfigElement> { element ->
                 element.onInitialized()
             }
             this.forEachElement<ConfigElement> { element ->
