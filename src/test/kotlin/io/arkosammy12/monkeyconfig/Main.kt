@@ -1,7 +1,7 @@
 package io.arkosammy12.monkeyconfig
 
 import io.arkosammy12.monkeyconfig.builders.tomlConfigManager
-import io.arkosammy12.monkeyconfig.settings.TestNumberSettingImplementation
+import io.arkosammy12.monkeyconfig.settings.TestNumberSetting
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -22,13 +22,14 @@ object Main {
             booleanSetting("testTopLevelBooleanSetting", true) {
                 comment = "Test comment"
             }
+
             section("testSection") {
                 comment = "Test comment here"
                 numberSetting<Int>("testNumberSetting", 0) {
                     comment = "Test comment"
                     minValue = 0
                     maxValue = 10
-                    implementation = { builder -> TestNumberSettingImplementation(builder) }
+                    implementation = { builder -> TestNumberSetting(builder) }
                 }
                 section("testSubsection") {
                     comment = "Test comment"

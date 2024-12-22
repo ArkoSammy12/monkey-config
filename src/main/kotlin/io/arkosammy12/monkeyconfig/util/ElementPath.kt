@@ -5,7 +5,7 @@ data class ElementPath(val string: String) {
     init {
         val nodes: List<String> = this.string.split(".")
         for (node: String in nodes) {
-            if (node.contains("\\s+"))  {
+            if (node.contains("\\s+") || node.contains(" "))  {
                 throw IllegalArgumentException("Setting nodes cannot contain whitespaces!")
             }
             if (node.isBlank() || node.isEmpty()) {
