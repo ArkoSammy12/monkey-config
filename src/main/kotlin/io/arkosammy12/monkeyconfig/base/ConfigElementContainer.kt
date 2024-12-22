@@ -23,7 +23,7 @@ interface ConfigElementContainer {
     @Suppress("UNCHECKED_CAST")
     fun <T : ConfigElement> forEachElement(elementClass: Class<in T>, action: (T) -> Unit) {
         for (configElement: ConfigElement in this.configElements) {
-            if (elementClass.isInstance(configElements)) {
+            if (elementClass.isInstance(configElement)) {
                 action(configElement as T)
             }
         }

@@ -30,13 +30,10 @@ object Main {
                     maxValue = 10
                     implementation = { builder -> TestNumberSettingImplementation(builder) }
                 }
-
                 section("testSubsection") {
                     comment = "Test comment"
                     stringSetting("testStringSetting", "hello_dicedpixels") {
-
                         comment = "Test comment"
-
                     }
                 }
             }
