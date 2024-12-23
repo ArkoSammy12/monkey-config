@@ -4,6 +4,12 @@ import io.arkosammy12.monkeyconfig.settings.EnumSetting
 import io.arkosammy12.monkeyconfig.types.EnumType
 import io.arkosammy12.monkeyconfig.util.ElementPath
 
+/**
+ * An implementation of [SettingBuilder] that builds [EnumSetting] instances. Includes default implementations of
+ * the setting's [serializer], [deserializer] and the [implementation], all of which can be changed.
+ *
+ * @param E The type of the Enum instance held by the resulting [EnumSetting].
+ */
 open class EnumSettingBuilder<E : Enum<E>>(
     name: String,
     defaultValue: E,

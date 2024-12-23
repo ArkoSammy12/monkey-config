@@ -4,6 +4,12 @@ import io.arkosammy12.monkeyconfig.settings.NumberSetting
 import io.arkosammy12.monkeyconfig.types.NumberType
 import io.arkosammy12.monkeyconfig.util.ElementPath
 
+/**
+ * An implementation of [SettingBuilder] that builds [NumberSetting] instances. Includes default implementations of
+ * the setting's [serializer], [deserializer] and the [implementation], all of which can be changed.
+ *
+ * @param T The numerical type of the value held by the resulting [NumberSetting].
+ */
 open class NumberSettingBuilder<T : Number>(
     name: String,
     defaultValue: T,

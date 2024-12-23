@@ -4,6 +4,12 @@ import io.arkosammy12.monkeyconfig.sections.maps.MapSection
 import io.arkosammy12.monkeyconfig.types.SerializableType
 import io.arkosammy12.monkeyconfig.util.ElementPath
 
+/**
+ * An implementation of [ConfigElementBuilder] that builds [MapSection] instances.
+ *
+ * @param V The type of the values of the entries held by the resulting [MapSection].
+ * @param S The [SerializableType] used when writing the values of the entries held by the resulting [MapSection] to a configuration file.
+ */
 open class MapSectionBuilder<V : Any, S : SerializableType<*>>(
     name: String,
     val parent: SectionBuilder? = null

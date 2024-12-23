@@ -6,6 +6,10 @@ import io.arkosammy12.monkeyconfig.types.ListType
 import io.arkosammy12.monkeyconfig.types.StringType
 import io.arkosammy12.monkeyconfig.util.ElementPath
 
+/**
+ * An implementation of [ListSettingBuilder] that builds [StringListSetting] instances. Includes default implementations of
+ * the setting's [serializer], [deserializer] and the [implementation], all of which can be changed.
+ */
 open class StringListSettingBuilder(
     name: String,
     defaultValue: List<String>,
