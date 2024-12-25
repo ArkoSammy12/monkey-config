@@ -6,9 +6,17 @@ import io.arkosammy12.monkeyconfig.types.SerializableType
 import io.arkosammy12.monkeyconfig.util.ElementPath
 import org.slf4j.Logger
 
-abstract class AbstractSetting<T : Any, S : SerializableType<*>, I : AbstractSetting<T, S, I>>(
-    settingBuilder: SettingBuilder<T, S, I, *>
-) : Setting<T, S> {
+/**
+ * Providers a default abstract implementation for [Setting] that serves as a common parent class for the more concrete
+ * default [Setting] implementations corresponding to the basic serializable data types.
+ *
+ * @param V The type of the value that is stored by this instance.
+ * @param S The [SerializableType] that will be used to serialize and deserialize the value [V] to and from a configuration file.
+ * @param I The specific implementation of [io.arkosammy12.monkeyconfig.settings.AbstractSetting] that will be used for the callback functions.
+ */
+abstract class AbstractSetting<V : Any, S : SerializableType<*>, I : AbstractSetting<V, S, I>>(
+    settingBuilder: SettingBuilder<V, S, I, *>
+) : Setting<V, S> {
 
     override val name: String = settingBuilder.name
 

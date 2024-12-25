@@ -4,8 +4,18 @@ package io.arkosammy12.monkeyconfig.types
 
 import io.arkosammy12.monkeyconfig.base.Setting
 
+/**
+ * Represents a wrapper for a type which can be directly written to and read from a file.
+ * Used by [Setting]s
+ * to serialize their actual values.
+ *
+ * @param T The type of the serializable value.
+ */
 sealed interface SerializableType<T : Any> {
 
+    /**
+     * The value of the underlying serializable type.
+     */
     val value: T
 
 }

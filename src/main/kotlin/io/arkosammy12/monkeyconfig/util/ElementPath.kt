@@ -1,5 +1,12 @@
 package io.arkosammy12.monkeyconfig.util
 
+/**
+ * A utility class for representing paths within configuration files to reference and access [io.arkosammy12.monkeyconfig.base.ConfigElement].
+ * An [io.arkosammy12.monkeyconfig.util.ElementPath] is represented by a dot separated list of strings called "nodes". Each node
+ * cannot contain "." or periods to avoid accidentally creating a new node when it was not intended.
+ *
+ * @property string The actual string representation of the path.
+ */
 data class ElementPath(val string: String) {
 
     init {
@@ -14,18 +21,42 @@ data class ElementPath(val string: String) {
         }
     }
 
+    /**
+     * @param nodes A variadic list of the nodes that constitute this [io.arkosammy12.monkeyconfig.util.ElementPath].
+     */
     constructor(vararg nodes: String) : this(nodes.joinToString("."))
 
+    /**
+     * @param nodes A list of the nodes that constitutes this [io.arkosammy12.monkeyconfig.util.ElementPath].
+     */
     constructor(nodes: List<String>) : this(nodes.joinToString("."))
 
+    /**
+     * A list containing all the nodes of the underlying string representation of the [io.arkosammy12.monkeyconfig.util.ElementPath].
+     */
     val asList: List<String>
         get() = this.string.split(".")
 
+    /**
+     * An array containing all the nodes of the underlying string representation of the [io.arkosammy12.monkeyconfig.util.ElementPath].
+     */
     val asArray: Array<String>
         get() = this.asList.toTypedArray()
 
+    /**
+     * Checks if this [io.arkosammy12.monkeyconfig.util.ElementPath] contains a node matching [node].
+     *
+     * @param node The node to look for in this [io.arkosammy12.monkeyconfig.util.ElementPath].
+     * @return **true** if the node is contained in this [io.arkosammy12.monkeyconfig.util.ElementPath], **false** otherwise.
+     */
     fun contains(node: String) = this.asList.contains(node)
 
+    /**
+     * Returns a new [io.arkosammy12.monkeyconfig.util.ElementPath] that contains a new node at the end of its path.
+     *
+     * @param node The node to include in the returned [io.arkosammy12.monkeyconfig.util.ElementPath].
+     * @return An [io.arkosammy12.monkeyconfig.util.ElementPath] with [node] appended.
+     */
     fun withAppendedNode(node: String) : ElementPath {
         if (node.contains(".")) {
             throw IllegalArgumentException("Element path node cannot contain \".\"!")
@@ -35,6 +66,12 @@ data class ElementPath(val string: String) {
         return ElementPath(nodes)
     }
 
+    /**
+     * Returns a new [io.arkosammy12.monkeyconfig.util.ElementPath] that contains a new node at the beginning of its path.
+     *
+     * @param node The node to include in the returned [io.arkosammy12.monkeyconfig.util.ElementPath].
+     * @return An [io.arkosammy12.monkeyconfig.util.ElementPath] with [node] prepended.
+     */
     fun withPrependedNode(node: String) : ElementPath {
         if (node.contains(".")) {
             throw IllegalArgumentException("Element path node cannot contain \".\"!")

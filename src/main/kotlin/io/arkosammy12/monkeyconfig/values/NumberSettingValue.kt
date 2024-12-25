@@ -5,6 +5,13 @@ package io.arkosammy12.monkeyconfig.values
 import io.arkosammy12.monkeyconfig.types.NumberType
 import org.slf4j.Logger
 
+/**
+ * A [SettingValue] that stores a numerical value.
+ *
+ * @property minValue An optional numerical value that sets the lower bound for the raw value of the associated [io.arkosammy12.monkeyconfig.base.Setting].
+ * @property maxValue An optional numerical value that sets the upper bound for the raw value of the associated [io.arkosammy12.monkeyconfig.base.Setting].
+ * @param T The specific type of the numerical value.
+ */
 class NumberSettingValue<T : Number> @JvmOverloads constructor(
     default: T,
     raw: T = default,
