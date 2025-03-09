@@ -44,4 +44,24 @@ At the moment, Monkey Config is not multiplatform, and only targets the JVM plat
 
 ## Gradle
 ---
-// TODO
+
+To include this library in your project, first include the following repository in your `build.gradle.kts` build script.
+
+```kotlin
+maven {
+    name = "enjaraiMavenReleases"
+    url = uri("https://maven.enjarai.dev/releases")
+}
+ 
+```
+
+Then, you can include the following in your `dependencies` block.
+
+```kotlin
+dependencies {
+    implementation("io.github.arkosammy12:monkey-config:${version}")
+}
+
+```
+
+Where `version` is the latest version which can be found in the Releases section.
