@@ -52,6 +52,7 @@ maven {
     name = "enjaraiMavenReleases"
     url = uri("https://maven.enjarai.dev/releases")
 }
+ 
 ```
 
 Then, you can include the following in your `dependencies` block.
