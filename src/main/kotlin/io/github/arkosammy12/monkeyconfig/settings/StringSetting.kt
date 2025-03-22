@@ -4,7 +4,7 @@ import io.github.arkosammy12.monkeyconfig.builders.StringSettingBuilder
 import io.github.arkosammy12.monkeyconfig.types.StringType
 import io.github.arkosammy12.monkeyconfig.values.SettingValue
 
-class StringSetting(
+open class StringSetting(
     settingBuilder: StringSettingBuilder
 ) : AbstractSetting<String, StringType, StringSetting>(settingBuilder) {
 
