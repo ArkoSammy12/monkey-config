@@ -238,6 +238,7 @@ fun <C : Config, T : ConfigFormat<C>> configManager(fileName: String, fileFormat
  * @param builderInstanceProvider A provider that returns the specific [ConfigManagerBuilder] implementation to be used when configuring the resulting [ConfigManager]. By default, it uses a regular [ConfigManagerBuilder].
  * @param builder A function to configure the [ConfigManagerBuilder] used to build the resulting [ConfigManager].
  */
+@JvmOverloads
 fun jsonConfigManager(fileName: String, filePath: Path, builderInstanceProvider: (String, JsonFormat<*>, Path) -> ConfigManagerBuilder = ::ConfigManagerBuilder, builder: ConfigManagerBuilder.() -> Unit): ConfigManager {
     checkFileExtension(filePath, ".json", ".json5")
     return configManager(fileName, JsonFormat.fancyInstance(), filePath, builderInstanceProvider, builder)
@@ -251,6 +252,7 @@ fun jsonConfigManager(fileName: String, filePath: Path, builderInstanceProvider:
  * @param builderInstanceProvider A provider that returns the specific [ConfigManagerBuilder] implementation to be used when configuring the resulting [ConfigManager]. By default, it uses a regular [ConfigManagerBuilder].
  * @param builder A function to configure the [ConfigManagerBuilder] used to build the resulting [ConfigManager].
  */
+@JvmOverloads
 fun yamlConfigManager(fileName: String, filePath: Path, builderInstanceProvider: (String, YamlFormat, Path) -> ConfigManagerBuilder = ::ConfigManagerBuilder, builder: ConfigManagerBuilder.() -> Unit): ConfigManager {
     checkFileExtension(filePath, ".yaml", ".yml")
     return configManager(fileName, YamlFormat.defaultInstance(), filePath, builderInstanceProvider, builder)
@@ -264,6 +266,7 @@ fun yamlConfigManager(fileName: String, filePath: Path, builderInstanceProvider:
  * @param builderInstanceProvider A provider that returns the specific [ConfigManagerBuilder] implementation to be used when configuring the resulting [ConfigManager]. By default, it uses a regular [ConfigManagerBuilder].
  * @param builder A function to configure the [ConfigManagerBuilder] used to build the resulting [ConfigManager].
  */
+@JvmOverloads
 fun tomlConfigManager(fileName: String, filePath: Path, builderInstanceProvider: (String, TomlFormat, Path) -> ConfigManagerBuilder = ::ConfigManagerBuilder, builder: ConfigManagerBuilder.() -> Unit): ConfigManager {
     checkFileExtension(filePath, ".toml")
     return configManager(fileName, TomlFormat.instance(), filePath, builderInstanceProvider, builder)
@@ -277,6 +280,7 @@ fun tomlConfigManager(fileName: String, filePath: Path, builderInstanceProvider:
  * @param builderInstanceProvider A provider that returns the specific [ConfigManagerBuilder] implementation to be used when configuring the resulting [ConfigManager]. By default, it uses a regular [ConfigManagerBuilder].
  * @param builder A function to configure the [ConfigManagerBuilder] used to build the resulting [ConfigManager].
  */
+@JvmOverloads
 fun hoconConfigManager(fileName: String, filePath: Path, builderInstanceProvider: (String, HoconFormat, Path) -> ConfigManagerBuilder = ::ConfigManagerBuilder, builder: ConfigManagerBuilder.() -> Unit): ConfigManager {
     checkFileExtension(filePath, ".conf")
     return configManager(fileName, HoconFormat.instance(), filePath, builderInstanceProvider, builder)
