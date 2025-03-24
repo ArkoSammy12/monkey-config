@@ -6,11 +6,14 @@ import io.github.arkosammy12.monkeyconfig.base.ConfigElement
 import io.github.arkosammy12.monkeyconfig.builders.ConfigElementBuilder
 import io.github.arkosammy12.monkeyconfig.builders.SectionBuilder
 
-class DefaultSection(
+open class DefaultSection(
     sectionBuilder: SectionBuilder,
 ) : AbstractSection(sectionBuilder) {
 
     override val configElements: List<ConfigElement>
+        get() = this.internalConfigElements
+
+    protected var internalConfigElements: List<ConfigElement>
 
     init {
         val configElements: MutableList<ConfigElement> = mutableListOf()
@@ -19,7 +22,7 @@ class DefaultSection(
             configElements.add(configElement)
         }
 
-        this.configElements = configElements.toList()
+        this.internalConfigElements = configElements.toList()
     }
 
 
