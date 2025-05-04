@@ -19,10 +19,6 @@ object Main {
     @JvmStatic
     fun main(args: Array<String>) {
         val configManager = tomlConfigManager("myFileConfig", TEST_PATH.resolve("test.toml")) {
-            stringMapSection("replace_map") {
-                addDefaultEntry("minecraft:diamond_block" to "minecraft:stone")
-            }
-
             booleanSetting("monkeyStyle", true) {
                 comment = "This is true by default!"
             }
@@ -44,12 +40,6 @@ object Main {
                     }
                     stringListSetting("list", listOf("ArkoSammy12")) {}
                 }
-            }
-            section("holahola") {
-                stringMapSection("replace_map") {
-                    addDefaultEntry("minecraft:diamond_block" to "minecraft:stone")
-                }
-                numberSetting("XDD", 10) {}
             }
         }
         configManager.saveToFile()
