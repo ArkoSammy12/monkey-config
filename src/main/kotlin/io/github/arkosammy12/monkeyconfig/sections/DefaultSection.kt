@@ -4,11 +4,11 @@ import com.electronwill.nightconfig.core.Config
 import com.electronwill.nightconfig.core.file.FileConfig
 import io.github.arkosammy12.monkeyconfig.base.ConfigElement
 import io.github.arkosammy12.monkeyconfig.builders.ConfigElementBuilder
-import io.github.arkosammy12.monkeyconfig.builders.SectionBuilder
+import io.github.arkosammy12.monkeyconfig.builders.DefaultSectionBuilder
 
 open class DefaultSection(
-    sectionBuilder: SectionBuilder,
-) : AbstractSection(sectionBuilder) {
+    sectionBuilder: DefaultSectionBuilder,
+) : AbstractSection<DefaultSection, DefaultSectionBuilder>(sectionBuilder) {
 
     override val configElements: List<ConfigElement>
         get() = this.internalConfigElements
@@ -30,6 +30,20 @@ open class DefaultSection(
         super.saveValue(fileConfig)
         val config: Config = fileConfig.get(this.path.string) ?: return
         config.entrySet().removeIf { entry -> this.configElements.none { element -> element.path.asList.last() == entry.key  } }
+    }
+
+    override fun onInitialized() {
+        this.internalIsInitialized =  true
+        this.onInitializedFunction?.let { it(this) }
+
+    }
+
+    override fun onUpdated() {
+        this.onUpdatedFunction?.let { it(this) }
+    }
+
+    override fun onSaved() {
+        this.onSavedFunction?.let { it(this) }
     }
 
 }

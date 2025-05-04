@@ -170,8 +170,8 @@ open class ConfigManagerBuilder(
      * @return The [ElementPath] associated to the resulting [Section].
      */
     @JvmOverloads
-    fun section(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder) -> SectionBuilder = ::SectionBuilder, builder: SectionBuilder.() -> Unit) {
-        val sectionBuilder: SectionBuilder = builderInstanceProvider(sectionName, this)
+    fun section(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder) -> DefaultSectionBuilder = ::DefaultSectionBuilder, builder: DefaultSectionBuilder.() -> Unit) {
+        val sectionBuilder: DefaultSectionBuilder = builderInstanceProvider(sectionName, this)
         builder(sectionBuilder)
         sectionBuilder.logger = this.logger
         this.internalConfigElementBuilders.add(sectionBuilder)
@@ -188,8 +188,8 @@ open class ConfigManagerBuilder(
      *
      * @return The [ElementPath] associated to the resulting [io.github.arkosammy12.monkeyconfig.sections.maps.MapSection].
      */
-    fun <V : Any, S : SerializableType<*>, T : MapSectionBuilder<V, S>> mapSection(sectionName: String, builderInstanceProvider: (String) -> T, builder: T.() -> Unit): ElementPath {
-        val mapSectionBuilder = builderInstanceProvider(sectionName)
+    fun <V : Any, S : SerializableType<*>, T : MapSectionBuilder<V, S>> mapSection(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder) -> T, builder: T.() -> Unit): ElementPath {
+        val mapSectionBuilder = builderInstanceProvider(sectionName, this)
         builder(mapSectionBuilder)
         mapSectionBuilder.logger = this.logger
         this.internalConfigElementBuilders.add(mapSectionBuilder)

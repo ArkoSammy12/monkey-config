@@ -1,6 +1,5 @@
 package io.github.arkosammy12.monkeyconfig.builders
 
-import io.github.arkosammy12.monkeyconfig.sections.DefaultSection
 import io.github.arkosammy12.monkeyconfig.base.Section
 import io.github.arkosammy12.monkeyconfig.base.Setting
 import io.github.arkosammy12.monkeyconfig.types.SerializableType
@@ -10,11 +9,11 @@ import io.github.arkosammy12.monkeyconfig.util.ElementPath
 /**
  * A class which builds [Section]s.
  */
-open class SectionBuilder(
+abstract class SectionBuilder<I : Section, A : SectionBuilder<I, A>>(
     name: String,
     internal val manager: ConfigManagerBuilder,
-    internal var parent: SectionBuilder? = null
-) : ConfigElementBuilder<Section, SectionBuilder>(name) {
+    internal var parent: SectionBuilder<*, *>? = null
+) : ConfigElementBuilder<I, A>(name) {
 
     override val path: ElementPath = this.getPath()
 
@@ -29,7 +28,7 @@ open class SectionBuilder(
 
     protected val internalConfigElementBuilders: MutableList<ConfigElementBuilder<*, *>> = mutableListOf()
 
-    override var implementation: (SectionBuilder) -> Section = ::DefaultSection
+    override lateinit var implementation: (A) -> I
 
     init {
         this.logger = parent?.logger
@@ -145,8 +144,8 @@ open class SectionBuilder(
      * @return The [ElementPath] associated to the resulting [Section].
      */
     @JvmOverloads
-    fun section(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder, SectionBuilder?) -> SectionBuilder = ::SectionBuilder, builder: SectionBuilder.() -> Unit) {
-        val sectionBuilder: SectionBuilder = builderInstanceProvider(sectionName, this.manager, this)
+    fun section(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder, SectionBuilder<*, *>?) -> DefaultSectionBuilder = ::DefaultSectionBuilder, builder: DefaultSectionBuilder.() -> Unit) {
+        val sectionBuilder: DefaultSectionBuilder = builderInstanceProvider(sectionName, this.manager, this)
         builder(sectionBuilder)
         sectionBuilder.logger = this.logger
         this.internalConfigElementBuilders.add(sectionBuilder)
@@ -163,8 +162,8 @@ open class SectionBuilder(
      *
      * @return The [ElementPath] associated to the resulting [io.github.arkosammy12.monkeyconfig.sections.maps.MapSection].
      */
-    fun <V : Any, S : SerializableType<*>, T : MapSectionBuilder<V, S>> mapSection(sectionName: String, builderInstanceProvider: (String, SectionBuilder) -> T, builder: T.() -> Unit): ElementPath {
-        val mapSectionBuilder = builderInstanceProvider(sectionName, this)
+    fun <V : Any, S : SerializableType<*>, T : MapSectionBuilder<V, S>> mapSection(sectionName: String, builderInstanceProvider: (String, ConfigManagerBuilder, SectionBuilder<I, A>) -> T, builder: T.() -> Unit): ElementPath {
+        val mapSectionBuilder = builderInstanceProvider(sectionName, this.manager, this)
         builder(mapSectionBuilder)
         mapSectionBuilder.logger = this.logger
         this.internalConfigElementBuilders.add(mapSectionBuilder)
@@ -180,7 +179,7 @@ open class SectionBuilder(
      * @return The [ElementPath] associated to the resulting [io.github.arkosammy12.monkeyconfig.sections.maps.StringMapSection].
      */
     fun stringMapSection(sectionName: String, builder: StringMapSectionBuilder.() -> Unit): ElementPath =
-        this.mapSection(sectionName, ::StringMapSectionBuilder, builder)
+        this.mapSection(sectionName, ::StringMapSectionBuilder , builder)
 
     private fun getPath(): ElementPath {
         var path = ElementPath(this.name)
@@ -193,19 +192,16 @@ open class SectionBuilder(
         return path
     }
 
-    private fun traverseToParent(section: SectionBuilder? = null, consumer: (SectionBuilder) -> Unit) {
-        val startingSection: SectionBuilder = section ?: this.also { currentSectionBuilder ->
+    private fun traverseToParent(section: SectionBuilder<*, *>? = null, consumer: (SectionBuilder<*, *>) -> Unit) {
+        val startingSection: SectionBuilder<*, *> = section ?: this.also { currentSectionBuilder ->
             consumer(currentSectionBuilder)
         }
-        val parent: SectionBuilder? = startingSection.parent
+        val parent: SectionBuilder<*, *>? = startingSection.parent
         if (parent == null) {
             return
         }
         consumer(parent)
         traverseToParent(parent, consumer)
     }
-
-    override fun build(): Section =
-        this.implementation(this)
 
 }

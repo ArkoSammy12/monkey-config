@@ -53,7 +53,7 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
         val mapEntries: MutableList<Setting<V, S>> = mutableListOf()
         val defaultMapEntries: MutableList<Setting<V, S>> = mutableListOf()
         for ((key, value) in mapSectionBuilder.defaultEntries) {
-            val entry: Setting<V, S> = this.getEntryFromValue(this.path, value)
+            val entry: Setting<V, S> = this.getEntryFromValue(this.path.withAppendedNode(key), value)
             defaultMapEntries.add(entry)
             mapEntries.add(entry)
         }
@@ -111,10 +111,10 @@ abstract class AbstractMapSection<V : Any, S : SerializableType<*>>(
         }
     }
 
-    override fun  updateValue(fileConfig: FileConfig) {
+    override fun updateValue(fileConfig: FileConfig) {
         val config: Config = fileConfig.get(this.path.string) ?: run {
             this.logger?.error("Found no Section with name ${this.name} to load values from!")
-            return
+            return@updateValue
         }
         val tempEntries: MutableList<Setting<V, S>> = mutableListOf()
         for (entry: Config.Entry in config.entrySet()) {

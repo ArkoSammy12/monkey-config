@@ -10,8 +10,9 @@ import io.github.arkosammy12.monkeyconfig.types.StringType
  */
 open class StringMapSectionBuilder(
     name: String,
-    parent: SectionBuilder? = null
-) : MapSectionBuilder<String, StringType>(name, parent) {
+    manager: ConfigManagerBuilder,
+    parent: SectionBuilder<*, *>? = null
+) : MapSectionBuilder<String, StringType>(name, manager, parent) {
 
     override var serializer: (String) -> StringType = ::StringType
 
