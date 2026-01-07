@@ -1,6 +1,8 @@
 package io.github.arkosammy12.monkeyconfig.types
 
+@OptIn(ExperimentalStdlibApi::class)
 @JvmInline
+@JvmExposeBoxed
 value class StringType(override val value: String) : SerializableType<String> {
 
     override fun toString(): String =
